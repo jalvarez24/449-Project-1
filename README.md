@@ -41,5 +41,6 @@ Users Table:
 Descriptions Table: 
 [
   (PK)"username" : "noobmaster69"
-  
+  (FK)"track_id" : "1"
+  "description" : "This song was pretty lit!"
 ]
