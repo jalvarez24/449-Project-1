@@ -8,10 +8,10 @@
 	//he just said create, retrieve, delete, list all pl, and list pl created by user
 
 ###### Tracks Microservice:
-**To retrieve all of the tracks in the Tracks table: **
-127.0.0.1:5000/api/v1/resources/musicService/tracks/all
+** To retrieve all of the tracks in the Tracks table: **
+>127.0.0.1:5000/api/v1/resources/musicService/tracks/all
 
-**To query one of the tracks in the Tracks Table based on an attribute add ? after the url: **
+** To query one of the tracks in the Tracks Table based on an attribute add ? after the url: **
 Example of filtering with just one attribute:
 >127.0.0.1:5000/api/v1/resources/musicService/tracks?artist=Queen
 
