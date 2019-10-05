@@ -1,11 +1,25 @@
 # 449-Project-1
-Music Microservices
+##Music Microservices
 
 //I think these will already be indexed automatically, so if we want
 	//the users to be able to change the order of songs in the playlist_id
 	//we might be able to use that, ALTHOUGH, he did not really say that we
 	//need to allow the users to edit the playlist
 	//he just said create, retrieve, delete, list all pl, and list pl created by user
+
+###### Tracks Microservice:
+**To retrieve all of the tracks in the Tracks table: **
+127.0.0.1:5000/api/v1/resources/musicService/tracks/all
+
+**To query one of the tracks in the Tracks Table based on an attribute add ? after the url: **
+Example of filtering with just one attribute:
+>127.0.0.1:5000/api/v1/resources/musicService/tracks?artist=Queen
+
+**To filter with more attributes separate query by &**
+Example of filtering with multiple attributes:
+>127.0.0.1:5000/api/v1/resources/musicService/tracks?artist=Queen&year=1982
+
+
 
 Track Table:  
 [  
