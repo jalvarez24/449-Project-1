@@ -1,6 +1,6 @@
 # Science Fiction Novel API from "Creating Web APIs with Python and Flask"
 # <https://programminghistorian.org/en/lessons/creating-apis-with-python-and-flask>.
-# 
+#
 # What's new:
 #
 #  * Database specified in app config file
@@ -10,8 +10,9 @@
 #
 
 import flask
-from flask import request, jsonify, g
+from flask import request, jsonify, g, make_response
 import sqlite3
+from werkzeug.security import generate_password_hash, check_password_hash
 
 
 app = flask.Flask(__name__)
@@ -100,9 +101,38 @@ def api_filter():
 
     return jsonify(results)
 
+# Get all descriptions from 'description' table
+@app.route('/api/v1/resources/musicService/description/all', methods=['GET'])
+def description_all():
+    all_descriptions = query_db('SELECT * FROM Description;')
+
+    return jsonify(all_descriptions)
+
+# Jayro Alvarez
+@app.route('/create-user', methods=['POST'])
+def create_user():
+    #takes in request (sent in with curl as JSON data)
+    # and turn it into python dict. with 'get_json()' function
+    input = request.get_json()
+
+    username = input['username']
+    password = input['password']
+    display_name = input['display_name']
+    email = input['email']
+    homepage_url = input['homepage_url']
+
+
+    #setting up response data
+    data = jsonify({'response' : 'HTTP 201 Created',
+        'code' : '201',
+        'location' : homepage_url,
+    })
+
+    #create response to return
+    return make_response(data, 201)
+
 
 # What is shown if there is an error
 @app.errorhandler(404)
 def page_not_found(e):
     return "<h1>404</h1><p>The resource could not be found.</p>", 404
-
