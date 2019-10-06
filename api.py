@@ -74,6 +74,7 @@ def api_filter():
 
     id = query_parameters.get('id')
     artist = query_parameters.get('artist')
+    title = query_parameters.get('title')
     track_id = query_parameters.get('track_id')
     year = query_parameters.get('year')
 
@@ -86,13 +87,16 @@ def api_filter():
     if artist:
         query += ' artist=? AND'
         to_filter.append(artist)
+    if title:
+        query += ' title=? AND'
+        to_filter.append(title)
     if track_id:
         query += ' track_id=? AND'
         to_filter.append(track_id)
     if year:
         query += ' year=? AND'
         to_filter.append(year)
-    if not (id or artist or track_id or year):
+    if not (id or artist or title or track_id or year):
         return page_not_found(404)
 
     query = query[:-4] + ';'
