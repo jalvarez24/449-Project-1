@@ -137,6 +137,8 @@ def create_track():
     #create response to return
     return make_response(data, 201)
 
+# Jayro Alvarez
+# **For reference only! (Not part of project requirements)**
 # Get all descriptions from 'description' table
 @app.route('/api/v1/resources/musicService/description/all', methods=['GET'])
 def description_all():
@@ -144,8 +146,12 @@ def description_all():
 
     return jsonify(all_descriptions)
 
+#
+# USERS MICROSERVICE ROUTES:
+#
+
 # Jayro Alvarez
-@app.route('/create-user', methods=['POST'])
+@app.route('/api/v1/resources/musicService/users/create-user', methods=['POST'])
 def create_user():
     conn = sqlite3.connect('musicService.db')
     c = conn.cursor()
@@ -189,6 +195,40 @@ def create_user():
 
     #create response to return
     return make_response(data, 201)
+
+# Jayro Alvarez
+@app.route('/api/v1/resources/musicService/users/retrieve-profile', methods=['GET'])
+def retrieve_profile():
+    return make_response(200);
+
+# Jayro Alvarez
+@app.route('/api/v1/resources/musicService/users/delete-user', methods=['PUT'])
+def delete_user():
+    return make_response(200);
+
+# Jayro Alvarez
+@app.route('/api/v1/resources/musicService/users/change-password', methods=['PUT'])
+def change_password():
+    return make_response(200);
+
+# Jayro Alvarez
+@app.route('/api/v1/resources/musicService/users/authenticate-user', methods=['GET'])
+def authenticate_user():
+    return make_response(200);
+
+#
+# DESCRIPTIONS MICROSERVICE ROUTES:
+#
+
+# Jayro Alvarez
+@app.route('/api/v1/resources/musicService/descriptions/set-user-description', methods=['POST'])
+def set_user_description():
+    return make_response(201);
+
+# Jayro Alvarez
+@app.route('/api/v1/resources/musicService/descriptions/get-user-description', methods=['GET'])
+def get_user_description():
+    return make_response(200);
 
 
 # What is shown if there is an error
