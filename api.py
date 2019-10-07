@@ -1,13 +1,5 @@
-# Science Fiction Novel API from "Creating Web APIs with Python and Flask"
-# <https://programminghistorian.org/en/lessons/creating-apis-with-python-and-flask>.
-#
-# What's new:
-#
-#  * Database specified in app config file
-#
-#  * Includes features from "Using SQLite 3 with Flask"
-#    <https://flask.palletsprojects.com/en/1.1.x/patterns/sqlite3/>
-#
+# Music Microservices APIs
+# CPSC 449- Backend Engineering
 
 import flask
 import json
@@ -119,7 +111,7 @@ def create_track():
     title = input['title']
     artist = input['artist']
     year = input['year']
-    
+
 
     params = (title,artist,year)
 
@@ -155,16 +147,39 @@ def description_all():
 # Jayro Alvarez
 @app.route('/create-user', methods=['POST'])
 def create_user():
+    conn = sqlite3.connect('musicService.db')
+    c = conn.cursor()
+
     #takes in request (sent in with curl as JSON data)
     # and turn it into python dict. with 'get_json()' function
     input = request.get_json()
+
+    required_fields = ['username', 'password', 'display_name', 'email']
+    # if not all required fields inputted return 404
+    if not all([field in input for field in required_fields]):
+        error = jsonify({'response' : 'HTTP 404, Missing Required Fields',
+            'code' : '404',
+        })
+        return make_response(error, 404)
 
     username = input['username']
     password = input['password']
     display_name = input['display_name']
     email = input['email']
-    homepage_url = input['homepage_url']
+    #initialize optional data to 'None'
+    homepage_url = None
+    #check if optional data was sent in, if not, already set to None
+    if 'homepage_url' in input:
+        homepage_url = input['homepage_url']
 
+    #hash inputted password:
+    hashed_pw = generate_password_hash(password)
+
+    params = (username, hashed_pw, display_name, email, homepage_url)
+
+    c.execute("INSERT INTO User VALUES(?,?,?,?,?)", params)
+    conn.commit()
+    conn.close()
 
     #setting up response data
     data = jsonify({'response' : 'HTTP 201 Created',
