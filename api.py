@@ -10,6 +10,7 @@
 #
 
 import flask
+import json
 from flask import request, jsonify, g, make_response
 import sqlite3
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -104,6 +105,45 @@ def api_filter():
     results = query_db(query, to_filter)
 
     return jsonify(results)
+
+# This allows the user to create a track and POST it to the database
+@app.route('/api/v1/resources/musicService/tracks/create-track', methods=['POST'])
+def create_track():
+    conn = sqlite3.connect('musicService.db')
+    c = conn.cursor()
+
+    #takes in request (sent in with curl as JSON data)
+    # and turn it into python dict. with 'get_json()' function
+    input = request.get_json()
+
+    title = input['title']
+    artist = input['artist']
+    year = input['year']
+    
+
+    params = (title,artist,year)
+
+    #setting up response data
+    data = jsonify({'response' : 'HTTP 201 Created',
+        'code' : '201',
+        'posted_title' : title,
+        'posted_artist' : artist,
+        'posted_year' :    year,
+    })
+    c.execute("INSERT INTO Track VALUES(NULL, ?, ?, ?)", params) # This is what worked
+
+    #These were the tests i was doing:
+    #c.execute("INSERT INTO Track VALUES(title, artist, year)")
+    #c.execute("INSERT INTO Track VALUES(data["posted_title"], data["posted_artist"], data["posted_year"])")
+    #c.execute("INSERT INTO Track VALUES(data.posted_title, data.posted_artist, data.posted_year)")
+    #c.execute("INSERT INTO Track(title, artist, year) VALUES(?, ?, ?)", (title, artist, year))
+    #c.execute("INSERT INTO Track VALUES(?, ?, ?)", [data["posted_title"], data["posted_artist"], data["posted_year"]])
+
+
+    conn.commit()
+    conn.close()
+    #create response to return
+    return make_response(data, 201)
 
 # Get all descriptions from 'description' table
 @app.route('/api/v1/resources/musicService/description/all', methods=['GET'])
