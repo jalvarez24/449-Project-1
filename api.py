@@ -223,7 +223,7 @@ def retrieve_profile():
 
     #If no user is found
     if not result:
-        return jsonify("No user found.")
+        return page_not_found(404);
 
     #pull out 1st entry in query result => contain dict. with all info in user
     result = result[0]
@@ -311,9 +311,60 @@ def change_password():
     return page_not_found(404)
 
 # Jayro Alvarez
-@app.route('/api/v1/resources/musicService/users/authenticate-user', methods=['GET'])
+@app.route('/api/v1/resources/musicService/users/authenticate-user', methods=['POST'])
 def authenticate_user():
-    return make_response(200);
+    #takes in request (sent in with curl as JSON data)
+    # and turn it into python dict. with 'get_json()' function
+    input = request.get_json()
+
+    required_fields = ['username', 'password']
+    # if not all required fields inputted return 404
+    if not all([field in input for field in required_fields]):
+        error = jsonify({'response' : 'HTTP 404, Missing Required Fields',
+            'code' : '404',
+        })
+        return make_response(error, 404)
+
+    username = input['username']
+    password = input['password']
+
+    #create db connection
+    conn = sqlite3.connect('musicService.db')
+    c = conn.cursor()
+
+    query = "SELECT username, password FROM User WHERE username = \"" + username + "\";"
+    result = query_db(query)
+    conn.commit()
+    conn.close()
+
+    #If no user is found, return 404
+    if not result:
+        error = jsonify({'response' : 'HTTP 404 Not Found',
+            'code' : '404',
+        })
+        return make_response(error, 404)
+
+    #pull out 1st entry in query result => contain dict. with username and password
+    result = result[0]
+
+    #check the stored, hashed value in db with passed in parameter
+    password_check = check_password_hash(result['password'], password)
+
+    #if check came back true:
+    if password_check == True:
+        data = jsonify({'response' : 'HTTP 200 OK',
+            'code' : '200',
+        })
+
+        #create response to return
+        return make_response(data, 200)
+
+    #otherwise, return a 404 not found
+    error = jsonify({'response' : 'HTTP 404 Not Found',
+        'code' : '404',
+    })
+    return make_response(error, 404)
+
 
 #
 # DESCRIPTIONS MICROSERVICE ROUTES:
