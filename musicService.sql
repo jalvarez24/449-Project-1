@@ -37,7 +37,7 @@ CREATE TABLE User (
   UNIQUE(username, email)
 );
 INSERT INTO User(username, password, display_name, email, homepage_url)
-  VALUES('noobmaster69', 'tempPass', 'noooob', 'thegreatnoob@gmail.com', 'https://thenoob.com');
+  VALUES('noobmaster69', 'mySecretPassword', 'noooob', 'thegreatnoob@gmail.com', 'https://thenoob.com');
 
 DROP TABLE IF EXISTS Description;
 CREATE TABLE Description (

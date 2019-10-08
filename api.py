@@ -153,9 +153,6 @@ def description_all():
 # Jayro Alvarez
 @app.route('/api/v1/resources/musicService/users/create-user', methods=['POST'])
 def create_user():
-    conn = sqlite3.connect('musicService.db')
-    c = conn.cursor()
-
     #takes in request (sent in with curl as JSON data)
     # and turn it into python dict. with 'get_json()' function
     input = request.get_json()
@@ -183,33 +180,135 @@ def create_user():
 
     params = (username, hashed_pw, display_name, email, homepage_url)
 
+    conn = sqlite3.connect('musicService.db')
+    c = conn.cursor()
+
+    #check if username already in database before insertion
+    c.execute("SELECT username FROM User WHERE username = \"" + username + "\";")
+    found = c.fetchone()
+
+    #username already exists, return  HTTP 409 Conflict.
+    if found:
+        #setting up response data
+        data = jsonify({'response' : 'HTTP 409 Conflict',
+            'code' : '409',
+        })
+
+        #create response to return
+        return make_response(data)
+
     c.execute("INSERT INTO User VALUES(?,?,?,?,?)", params)
+
     conn.commit()
     conn.close()
 
     #setting up response data
     data = jsonify({'response' : 'HTTP 201 Created',
         'code' : '201',
-        'location' : homepage_url,
+        'location' : 'http://127.0.0.1:5000/api/v1/resources/musicService/users/retrieve-profile?username=' + username,
     })
-
     #create response to return
     return make_response(data, 201)
 
 # Jayro Alvarez
 @app.route('/api/v1/resources/musicService/users/retrieve-profile', methods=['GET'])
 def retrieve_profile():
-    return make_response(200);
+    query_parameters = request.args
+
+    username = query_parameters.get('username')
+
+    query = "SELECT * FROM User WHERE username = \"" + username + "\";"
+    to_filter = [username]
+    result = query_db(query)
+
+    #If no user is found
+    if not result:
+        return jsonify("No user found.")
+
+    #pull out 1st entry in query result => contain dict. with all info in user
+    result = result[0]
+
+    #get rid of password prior to returning result
+    del result['password']
+
+    return jsonify(result)
 
 # Jayro Alvarez
-@app.route('/api/v1/resources/musicService/users/delete-user', methods=['PUT'])
+@app.route('/api/v1/resources/musicService/users/delete-user', methods=['DELETE'])
 def delete_user():
-    return make_response(200);
+    input = request.get_json()
+
+    if not 'username' in input.keys():
+        error = jsonify({'response' : 'HTTP 404, Missing Required Fields',
+            'code' : '404',
+        })
+        return make_response(error, 404)
+
+    username = input['username']
+
+    conn = sqlite3.connect('musicService.db')
+    c = conn.cursor()
+
+    #check if username in database before deletion
+    c.execute("SELECT username FROM User WHERE username = \"" + username + "\";")
+    found = c.fetchone()
+
+    #username already exists, return  HTTP 409 Conflict.
+    if found:
+        c.execute("DELETE FROM User WHERE username = \"" + username + "\";")
+        #setting up response data
+        data = jsonify({'response' : 'HTTP 200 OK',
+            'code' : '200',
+        })
+
+        conn.commit()
+        conn.close()
+
+        #create response to return
+        return make_response(data, 200)
+
+    #if no user found
+    return page_not_found(404)
 
 # Jayro Alvarez
 @app.route('/api/v1/resources/musicService/users/change-password', methods=['PUT'])
 def change_password():
-    return make_response(200);
+    input = request.get_json()
+
+    if not 'username' in input.keys() or not 'newpassword' in input.keys():
+        error = jsonify({'response' : 'HTTP 404, Missing Required Fields',
+            'code' : '404',
+        })
+        return make_response(error, 404)
+
+    username = input['username']
+
+    #hash new password
+    new_password = generate_password_hash(input['newpassword'])
+
+    conn = sqlite3.connect('musicService.db')
+    c = conn.cursor()
+
+    #check if username in database before deletion
+    c.execute("SELECT username FROM User WHERE username = \"" + username + "\";")
+    found = c.fetchone()
+
+    #username already exists, return  HTTP 409 Conflict.
+    if found:
+        c.execute("UPDATE User SET password = \"" + new_password + "\" WHERE username = \"" + username + "\";")
+        #setting up response data
+        data = jsonify({'response' : 'HTTP 200 OK',
+            'code' : '200',
+        })
+
+        conn.commit()
+        conn.close()
+
+        #create response to return
+        return make_response(data, 200)
+
+    #if no user found
+    return page_not_found(404)
 
 # Jayro Alvarez
 @app.route('/api/v1/resources/musicService/users/authenticate-user', methods=['GET'])
