@@ -53,6 +53,10 @@ def home():
     return '''<h1>Team Awesome</h1>
 <p>A prototype API for a music microservice.</p>'''
 
+#
+############################## TRACKS MICROSERVICE CODE ########################################
+#
+
 # Gets all the tracks from the Track Table and turns it into json
 @app.route('/api/v1/resources/musicService/tracks/all', methods=['GET'])
 def api_all():
@@ -60,7 +64,7 @@ def api_all():
 
     return jsonify(all_books)
 
-# This filters the Track table depending on the query
+# This retrieves a track. This filters the Track table depending on the query
 @app.route('/api/v1/resources/musicService/tracks', methods=['GET'])
 def api_filter():
     query_parameters = request.args
@@ -74,9 +78,6 @@ def api_filter():
     query = "SELECT * FROM Track WHERE"
     to_filter = []
 
-    if id:
-        query += ' id=? AND'
-        to_filter.append(id)
     if artist:
         query += ' artist=? AND'
         to_filter.append(artist)
@@ -89,7 +90,7 @@ def api_filter():
     if year:
         query += ' year=? AND'
         to_filter.append(year)
-    if not (id or artist or title or track_id or year):
+    if not (artist or title or track_id or year):
         return page_not_found(404)
 
     query = query[:-4] + ';'
@@ -99,7 +100,7 @@ def api_filter():
     return jsonify(results)
 
 # This allows the user to create a track and POST it to the database
-@app.route('/api/v1/resources/musicService/tracks/create-track', methods=['POST'])
+@app.route('/api/v1/resources/musicService/tracks', methods=['POST'])
 def create_track():
     conn = sqlite3.connect('musicService.db')
     c = conn.cursor()
@@ -115,6 +116,11 @@ def create_track():
 
     params = (title,artist,year)
 
+    c.execute("INSERT INTO Track VALUES(NULL, ?, ?, ?)", params) # This is what worked
+    #c.execute("SELECT * FROM Track ORDER BY track_id DESC LIMIT 1")
+
+    # This would query for the track_id
+
     #setting up response data
     data = jsonify({'response' : 'HTTP 201 Created',
         'code' : '201',
@@ -122,20 +128,109 @@ def create_track():
         'posted_artist' : artist,
         'posted_year' :    year,
     })
-    c.execute("INSERT INTO Track VALUES(NULL, ?, ?, ?)", params) # This is what worked
-
-    #These were the tests i was doing:
-    #c.execute("INSERT INTO Track VALUES(title, artist, year)")
-    #c.execute("INSERT INTO Track VALUES(data["posted_title"], data["posted_artist"], data["posted_year"])")
-    #c.execute("INSERT INTO Track VALUES(data.posted_title, data.posted_artist, data.posted_year)")
-    #c.execute("INSERT INTO Track(title, artist, year) VALUES(?, ?, ?)", (title, artist, year))
-    #c.execute("INSERT INTO Track VALUES(?, ?, ?)", [data["posted_title"], data["posted_artist"], data["posted_year"]])
-
 
     conn.commit()
     conn.close()
     #create response to return
     return make_response(data, 201)
+
+@app.route('/api/v1/resources/musicService/tracks', methods=['DELETE'])
+def delete_track():
+    conn = sqlite3.connect('musicService.db')
+    c = conn.cursor()
+
+    input = request.get_json()
+
+    if not 'track_id' in input.keys():
+        error = jsonify({'response' : 'HTTP 404, Missing Required Fields',
+            'code' : '404',
+        })
+        return make_response(error, 404)
+
+    track_id = input['track_id']
+
+    #check if track_id in database before deletion
+    # "SELECT track_id FROM Track WHERE track_id = 5 "
+    c.execute("SELECT track_id FROM Track WHERE track_id = \"" + track_id + "\";")
+    found = c.fetchone()
+
+    #track_id already exists, return  HTTP 409 Conflict.
+    if found:
+        c.execute("DELETE FROM Track WHERE track_id = \"" + track_id + "\";")
+        #setting up response data
+        data = jsonify({'response' : 'HTTP 200 OK',
+            'code' : '200',
+        })
+
+        conn.commit()
+        conn.close()
+
+        #create response to return
+        return make_response(data, 200)
+
+    #if no user found
+    return page_not_found(404)
+
+@app.route('/api/v1/resources/musicService/tracks/edit-track', methods=['PUT'])
+def edit_track():
+    conn = sqlite3.connect('musicService.db')
+    c = conn.cursor()
+
+    input = request.get_json()
+
+    if not 'track_id' in input.keys() or not 'newTitle' or not 'newArtist' or not 'newYear' in input.keys():
+        error = jsonify({'response' : 'HTTP 404, Missing Required Fields',
+            'code' : '404',
+        })
+        return make_response(error, 404)
+
+    track_id_toUpdate = input['track_id'] 
+    newTitle = input['newTitle']
+    newArtist = input['newArtist']
+    newYear = input['newYear']
+
+    
+
+    #check if track_id in database before deletion
+    # "SELECT track_id FROM Track WHERE track_id = 5 "
+    c.execute("SELECT track_id FROM Track WHERE track_id = \"" + track_id_toUpdate + "\";")
+    found = c.fetchone()
+
+    # edit the track with this id
+    # "UPDATE Track SET tite = "?", artist = "?", year = "?"" WHERE track_id = track_id; "
+    if found:
+        c.execute("UPDATE Track SET title = \""       + newTitle  + 
+                                    "\", artist = \"" + newArtist +
+                                    "\", year = \""   + newYear   + "\" WHERE track_id = \"" + track_id_toUpdate + "\";")
+        #setting up response data
+        data = jsonify({'response' : 'HTTP 200 OK',
+            'code' : '200',
+        })
+
+        conn.commit()
+        conn.close()
+
+        #create response to return
+        return make_response(data, 200)
+
+    #if no user found
+    return page_not_found(404)
+
+#
+############################## END OF TRACKS MICROSERVICE CODE ########################################
+#
+
+
+#
+############################## PLAYLIST MICROSERVICE CODE #############################################
+#
+
+
+
+#
+############################## END OF PLAYLIST MICROSERVICE CODE ######################################
+#
+
 
 # Jayro Alvarez
 # **For reference only! (Not part of project requirements)**
