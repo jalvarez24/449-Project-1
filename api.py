@@ -151,7 +151,7 @@ def description_all():
 #
 
 # Jayro Alvarez
-@app.route('/api/v1/resources/musicService/users/create-user', methods=['POST'])
+@app.route('/api/v1/resources/musicService/users', methods=['POST'])
 def create_user():
     #takes in request (sent in with curl as JSON data)
     # and turn it into python dict. with 'get_json()' function
@@ -205,17 +205,21 @@ def create_user():
     #setting up response data
     data = jsonify({'response' : 'HTTP 201 Created',
         'code' : '201',
-        'location' : 'http://127.0.0.1:5000/api/v1/resources/musicService/users/retrieve-profile?username=' + username,
+        'location' : 'http://127.0.0.1:5000/api/v1/resources/musicService/users?username=' + username,
     })
     #create response to return
     return make_response(data, 201)
 
 # Jayro Alvarez
-@app.route('/api/v1/resources/musicService/users/retrieve-profile', methods=['GET'])
+@app.route('/api/v1/resources/musicService/users', methods=['GET'])
 def retrieve_profile():
     query_parameters = request.args
 
     username = query_parameters.get('username')
+
+    #check is username is empty => could lead to None type concatenation below
+    if username is None:
+        return page_not_found(404)
 
     query = "SELECT * FROM User WHERE username = \"" + username + "\";"
     to_filter = [username]
@@ -223,7 +227,7 @@ def retrieve_profile():
 
     #If no user is found
     if not result:
-        return page_not_found(404);
+        return page_not_found(404)
 
     #pull out 1st entry in query result => contain dict. with all info in user
     result = result[0]
@@ -234,7 +238,7 @@ def retrieve_profile():
     return jsonify(result)
 
 # Jayro Alvarez
-@app.route('/api/v1/resources/musicService/users/delete-user', methods=['DELETE'])
+@app.route('/api/v1/resources/musicService/users', methods=['DELETE'])
 def delete_user():
     input = request.get_json()
 
