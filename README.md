@@ -7,7 +7,7 @@
 - Sqlite3
 - json
 
-## Tracks Microservice:
+# Tracks Microservice:
 ### To *CREATE* a track
 1. Be in the right project directory that has your .py, .sql, .db files
 2. Enter a **POST** curl command:
@@ -64,7 +64,7 @@
 
 
 
-## Playlist Microservice:
+# Playlist Microservice:
 ### To *CREATE* a playlist
 1. Be in the right project directory that has your .py, .sql, .db files
 2. Enter a **POST** curl command:
