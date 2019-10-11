@@ -59,38 +59,30 @@ def home():
 
 # Gets all the tracks from the Track Table and turns it into json
 @app.route('/api/v1/resources/musicService/tracks/all', methods=['GET'])
-def api_all():
-    all_books = query_db('SELECT * FROM Track;')
+def track_all():
+    all_tracks = query_db('SELECT * FROM Track;')
 
-    return jsonify(all_books)
+    return jsonify(all_tracks)
 
 # This retrieves a track. This filters the Track table depending on the query
 @app.route('/api/v1/resources/musicService/tracks', methods=['GET'])
 def api_filter():
     query_parameters = request.args
 
-    id = query_parameters.get('id')
-    artist = query_parameters.get('artist')
-    title = query_parameters.get('title')
     track_id = query_parameters.get('track_id')
-    year = query_parameters.get('year')
+
+
+    if track_id is None:
+        return page_not_found(404)
 
     query = "SELECT * FROM Track WHERE"
     to_filter = []
 
-    if artist:
-        query += ' artist=? AND'
-        to_filter.append(artist)
-    if title:
-        query += ' title=? AND'
-        to_filter.append(title)
     if track_id:
         query += ' track_id=? AND'
         to_filter.append(track_id)
-    if year:
-        query += ' year=? AND'
-        to_filter.append(year)
-    if not (artist or title or track_id or year):
+    
+    if not (track_id):
         return page_not_found(404)
 
     query = query[:-4] + ';'
@@ -109,14 +101,17 @@ def create_track():
     # and turn it into python dict. with 'get_json()' function
     input = request.get_json()
 
-    title = input['title']
+    track_title = input['track_title']
+    album_title = input['album_title']
     artist = input['artist']
-    year = input['year']
+    length_seconds = input['length_seconds']
+    url_media = input['url_media']
+    url_art = input['url_art']
 
 
-    params = (title,artist,year)
+    params = (track_title, album_title, artist, length_seconds, url_media, url_art)
 
-    c.execute("INSERT INTO Track VALUES(NULL, ?, ?, ?)", params) # This is what worked
+    c.execute("INSERT INTO Track VALUES(NULL, ?, ?, ?, ?, ?, ?)", params) # This is what worked
     #c.execute("SELECT * FROM Track ORDER BY track_id DESC LIMIT 1")
 
     # This would query for the track_id
@@ -124,9 +119,12 @@ def create_track():
     #setting up response data
     data = jsonify({'response' : 'HTTP 201 Created',
         'code' : '201',
-        'posted_title' : title,
+        'posted_title' : track_title,
+        'posted_album_title' : album_title,
         'posted_artist' : artist,
-        'posted_year' :    year,
+        'posted_length' : length_seconds,
+        'posted_url_media' : url_media,
+        'posted_url_art' : url_art
     })
 
     conn.commit()
@@ -178,16 +176,19 @@ def edit_track():
 
     input = request.get_json()
 
-    if not 'track_id' in input.keys() or not 'newTitle' or not 'newArtist' or not 'newYear' in input.keys():
+    if not 'track_id' in input.keys() or not 'newTrackTitle' or not 'newAlbumTitle' or not 'newArtist' or not 'newLength' or not 'newUrlMedia' or not 'newUrlArt' in input.keys():
         error = jsonify({'response' : 'HTTP 404, Missing Required Fields',
             'code' : '404',
         })
         return make_response(error, 404)
 
     track_id_toUpdate = input['track_id'] 
-    newTitle = input['newTitle']
+    newTrackTitle = input['newTrackTitle']
+    newAlbumTitle = input['newAlbumTitle']
     newArtist = input['newArtist']
-    newYear = input['newYear']
+    newLength = input['newLength']
+    newUrlMedia = input['newUrlMedia']
+    newUrlArt = input['newUrlArt']
 
     
 
@@ -199,9 +200,12 @@ def edit_track():
     # edit the track with this id
     # "UPDATE Track SET tite = "?", artist = "?", year = "?"" WHERE track_id = track_id; "
     if found:
-        c.execute("UPDATE Track SET title = \""       + newTitle  + 
-                                    "\", artist = \"" + newArtist +
-                                    "\", year = \""   + newYear   + "\" WHERE track_id = \"" + track_id_toUpdate + "\";")
+        c.execute("UPDATE Track SET track_title = \""       + newTrackTitle  +
+                                    "\", album_title = \""  + newAlbumTitle  + 
+                                    "\", artist = \""       + newArtist      +
+                                  "\", length_seconds = \"" + newLength      +
+                                    "\", url_media = \""    + newUrlMedia    + 
+                                    "\", url_art = \""      + newUrlArt      +"\" WHERE track_id = \"" + track_id_toUpdate + "\";")
         #setting up response data
         data = jsonify({'response' : 'HTTP 200 OK',
             'code' : '200',
@@ -224,6 +228,143 @@ def edit_track():
 #
 ############################## PLAYLIST MICROSERVICE CODE #############################################
 #
+
+### List all playlists
+@app.route('/api/v1/resources/musicService/playlists/all', methods=['GET'])
+def playlist_all():
+    all_playlist = query_db('SELECT * FROM Playlist;')
+
+    return jsonify(all_playlist)
+
+### List all playlists created by particular user
+@app.route('/api/v1/resources/musicService/playlists/user', methods=['GET'])
+def playlist_filter():
+    query_parameters = request.args
+
+    username_id = query_parameters.get('username_id')
+
+
+    if username_id is None:
+        return page_not_found(404)
+
+    query = "SELECT * FROM Playlist WHERE"
+    to_filter = []
+
+    if username_id:
+        query += ' username_id=? AND'
+        to_filter.append(username_id)
+    
+    if not (username_id):
+        return page_not_found(404)
+
+    query = query[:-4] + ';'
+
+    results = query_db(query, to_filter)
+
+    return jsonify(results)
+
+
+### Create a new playlist
+@app.route('/api/v1/resources/musicService/playlists', methods=['POST'])
+def create_playlist():
+    conn = sqlite3.connect('musicService.db')
+    c = conn.cursor()
+
+    #takes in request (sent in with curl as JSON data)
+    # and turn it into python dict. with 'get_json()' function
+    input = request.get_json()
+
+    playlist_title = input['playlist_title']
+    description = input['description']
+    username_id = input['username_id']
+    
+
+
+    params = (playlist_title, description, username_id)
+
+    c.execute("INSERT INTO Playlist VALUES(NULL, ?, ?, ?)", params) # This is what worked
+    #c.execute("SELECT * FROM Track ORDER BY track_id DESC LIMIT 1")
+
+    # This would query for the track_id
+
+    #setting up response data
+    data = jsonify({'response' : 'HTTP 201 Created',
+        'code' : '201',
+        'posted_playlist_title' : playlist_title,
+        'posted_description' : description,
+        'posted_username_id' : username_id
+    })
+
+    conn.commit()
+    conn.close()
+    #create response to return
+    return make_response(data, 201)
+
+
+### Retrieve a playlist
+@app.route('/api/v1/resources/musicService/playlists', methods=['GET'])
+def retrieve_playlist():
+    query_parameters = request.args
+
+    playlist_id = query_parameters.get('playlist_id')
+
+
+    if playlist_id is None:
+        return page_not_found(404)
+
+    query = "SELECT * FROM Playlist WHERE"
+    to_filter = []
+
+    if playlist_id:
+        query += ' playlist_id=? AND'
+        to_filter.append(playlist_id)
+    
+    if not (playlist_id):
+        return page_not_found(404)
+
+    query = query[:-4] + ';'
+
+    results = query_db(query, to_filter)
+
+    return jsonify(results)
+
+### Delete a playlist
+@app.route('/api/v1/resources/musicService/playlists', methods=['DELETE'])
+def delete_playlist():
+    conn = sqlite3.connect('musicService.db')
+    c = conn.cursor()
+
+    input = request.get_json()
+
+    if not 'playlist_id' in input.keys():
+        error = jsonify({'response' : 'HTTP 404, Missing Required Fields',
+            'code' : '404',
+        })
+        return make_response(error, 404)
+
+    playlist_id = input['playlist_id']
+
+    #check if track_id in database before deletion
+    # "SELECT track_id FROM Track WHERE track_id = 5 "
+    c.execute("SELECT playlist_id FROM Playlist WHERE playlist_id = \"" + playlist_id + "\";")
+    found = c.fetchone()
+
+    #track_id already exists, return  HTTP 409 Conflict.
+    if found:
+        c.execute("DELETE FROM Playlist WHERE playlist_id = \"" + playlist_id + "\";")
+        #setting up response data
+        data = jsonify({'response' : 'HTTP 200 OK',
+            'code' : '200',
+        })
+
+        conn.commit()
+        conn.close()
+
+        #create response to return
+        return make_response(data, 200)
+
+    #if no user found
+    return page_not_found(404)
 
 
 

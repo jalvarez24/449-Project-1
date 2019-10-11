@@ -1,11 +1,27 @@
 -- $ sqlite3 books.db < sqlite.sql
 
-PRAGMA foreign_keys = OFF;
+PRAGMA foreign_keys = ON;
 BEGIN TRANSACTION;
+
+DROP TABLE IF EXISTS User;
 DROP TABLE IF EXISTS Track;
 DROP TABLE IF EXISTS Playlist;
 DROP TABLE IF EXISTS Tracks_List;
 DROP TABLE IF EXISTS Description;
+
+CREATE TABLE User (
+  username VARCHAR PRIMARY KEY,
+  password VARCHAR,
+  display_name VARCHAR,
+  email VARCHAR,
+  homepage_url VARCHAR,
+  UNIQUE(username, email)
+);
+INSERT INTO User(username, password, display_name, email, homepage_url)
+  VALUES('noobmaster69', 'mySecretPassword', 'noooob', 'thegreatnoob@gmail.com', 'https://thenoob.com');
+INSERT INTO User(username, password, display_name, email, homepage_url)
+  VALUES('bob42', 'noPass', 'GumsGalore', 'oldDood@gmail.com', 'https://theDood.com');
+  
 
 CREATE TABLE Track (
     track_id INTEGER PRIMARY KEY,
@@ -22,44 +38,29 @@ INSERT INTO Track(track_title, album_title, artist, length_seconds, url_media, u
 INSERT INTO Track(track_title, album_title, artist, length_seconds, url_media, url_art) VALUES('Stan', 'The Marshall Mathers LP','Eminem', 180, 'www.soundcloud.com/songExample2', 'www.www.flickr.com/img2');
 INSERT INTO Track(track_title, album_title, artist, length_seconds, url_media, url_art) VALUES('Sunflower', 'Spiderman:Spiderverse', 'Post Malone', 187, 'www.soundcloud.com/songExample3', 'www.www.flickr.com/img3');
 
-DROP TABLE IF EXISTS User;
-CREATE TABLE User (
-  username VARCHAR PRIMARY KEY,
-  password VARCHAR,
-  display_name VARCHAR,
-  email VARCHAR,
-  homepage_url VARCHAR,
-  UNIQUE(username, email)
-);
-
-
-INSERT INTO User(username, password, display_name, email, homepage_url)
-  VALUES('noobmaster69', 'mySecretPassword', 'noooob', 'thegreatnoob@gmail.com', 'https://thenoob.com');
-INSERT INTO User(username, password, display_name, email, homepage_url)
-  VALUES('bob42', 'noPass', 'GumsGalore', 'oldDood@gmail.com', 'https://theDood.com');
 
 
 CREATE TABLE Playlist (
     playlist_id INTEGER PRIMARY KEY,
     playlist_title VARCHAR,
     description VARCHAR,
-    username_id VARCHAR
+    username_id VARCHAR,
+    FOREIGN KEY (username_id) REFERENCES User(username)
 );
 
-INSERT INTO Playlist(playlist_title, description, username_id) VALUES('Tables are Hard', 'When the times are tough', 'noobmaster69');
-INSERT INTO Playlist(playlist_title, description, username_id) VALUES('MyPlaylistTitle', '', 'bob42');
-INSERT INTO Playlist(playlist_title, description, username_id) VALUES('NewPlaylist', '', 'noobmaster69');
+INSERT INTO Playlist(playlist_title, description, username_id) VALUES('Tables are Hard', '', 'noobmaster69');
+
+
 
 
 CREATE TABLE Tracks_List (
-	list_id INTEGER PRIMARY KEY,
-	playlist_id INTEGER,
-	track_title VARCHAR
+    playlist_id VARCHAR,
+    track_id INTEGER,
+    FOREIGN KEY (playlist_id) REFERENCES Playlist(playlist_id),
+    FOREIGN KEY (track_id) REFERENCES Track(track_id)
 );
 
-INSERT INTO Tracks_List(playlist_id, track_title) VALUES (4, 'Stan');
-INSERT INTO Tracks_List(playlist_id, track_title) VALUES (4, 'Sunflower');
-INSERT INTO Tracks_List(playlist_id, track_title) VALUES (5, 'Under Pressure');
+
 
 
 CREATE TABLE Description (
