@@ -9,13 +9,17 @@
 	//he just said create, retrieve, delete, list all pl, and list pl created by user
 
 ## Tracks Microservice:
-**To retrieve all of the tracks in the Tracks table:**
->127.0.0.1:5000/api/v1/resources/musicService/tracks/all
 
-**To query one of the tracks in the Tracks Table based on an attribute add ? after the url:**
 
-Example of filtering with just **_one_** attribute:
->127.0.0.1:5000/api/v1/resources/musicService/tracks?artist=Queen
+**To retrieve a track from the Tracks Microservice:**
+1. You need to know the *track_id* of the track being retrieved
+- *If the **track_id** is not known, get it by retrieving all of tracks first and finding then necessary track_id*
+-**To retrieve all of the tracks in the Tracks Microservice:**
+>http://127.0.0.1:5000/api/v1/resources/musicService/tracks/all
+
+2. Query for the *track_id* by adding a "?" at the end of the URL to signify the start of a query.
+-For example:
+>http://127.0.0.1:5000/api/v1/resources/musicService/tracks?track_id=1
 
 **To filter with more attributes separate query by &**
 
