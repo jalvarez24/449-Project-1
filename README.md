@@ -7,15 +7,7 @@
 - Sqlite3
 - json
 
-
-//I think these will already be indexed automatically, so if we want
-	//the users to be able to change the order of songs in the playlist_id
-	//we might be able to use that, ALTHOUGH, he did not really say that we
-	//need to allow the users to edit the playlist
-	//he just said create, retrieve, delete, list all pl, and list pl created by user
-
 ## Tracks Microservice:
-
 ### To *CREATE* a track
 1. Be in the right project directory that has your .py, .sql, .db files
 2. Enter a **POST** curl command:
@@ -30,6 +22,7 @@
 - >curl -d '{"track_title" : "MYSONG", "album_title": "MYALBUM", "artist" : "BestArtist", "length_seconds" : "201", "url_media" : "wwww.soundcloud.com/thisSong", "url_art" : "wwww.flickr.com/thisImage"}' -H "Content-Type: application/json" -X POST http://127.0.0.1:5000/api/v1/resources/musicService/tracks
 
 
+
 ### To *RETRIEVE* a track from the Tracks Microservice:
 1. You need to know the *track_id* of the track being retrieved
 - *If the **track_id** is not known, get it by retrieving all of tracks first and finding the necessary track_id*
@@ -38,8 +31,9 @@
 - >http://127.0.0.1:5000/api/v1/resources/musicService/tracks/all
 
 2. Query for the *track_id* by adding a "?" at the end of the URL to signify the start of a query.
--For example:
->http://127.0.0.1:5000/api/v1/resources/musicService/tracks?track_id=1
+- For example:
+- >http://127.0.0.1:5000/api/v1/resources/musicService/tracks?track_id=1
+
 
 
 ### To *EDIT* a track
@@ -57,6 +51,7 @@
 - >curl -d '{"track_id" : "4", "newTrackTitle" : "NEWSONG", "newAlbumTitle": "NEWESTALBUM", "newArtist" : "NEWBestArtist", "newLength" : "180", "newUrlMedia" : "wwww.soundcloud.com/thisSong", "newUrlArt" : "wwww.flickr.com/thisImage"}' -H "Content-Type: application/json" -X PUT http://127.0.0.1:5000/api/v1/resources/musicService/tracks/edit-track
 
 
+
 ### To *DELETE* a track
 1. Be in the right project directory that has your .py, .sql, .db files
 2. Enter a **DELETE** curl command:
@@ -68,8 +63,8 @@
 
 
 
-## Playlist Microservice:
 
+## Playlist Microservice:
 ### To *CREATE* a playlist
 1. Be in the right project directory that has your .py, .sql, .db files
 2. Enter a **POST** curl command:
@@ -80,6 +75,7 @@
 
 **Example of a curl command to POST a playlist:**
 - >curl -d '{"playlist_title" : "The Feels Train", "description" : "Curl up and cry.", "username_id" : "bob42"}' -H "Content-Type: application/json" -X POST http://127.0.0.1:5000/api/v1/resources/musicService/playlists
+
 
 
 ### To *RETRIEVE* a playlist from the Playlist Microservice:
@@ -94,6 +90,7 @@
 >http://127.0.0.1:5000/api/v1/resources/musicService/playlists?playlist_id=1
 
 
+
 ### To *DELETE* a playlist
 1. Be in the right project directory that has your .py, .sql, .db files
 2. Enter a **DELETE** curl command:
@@ -104,9 +101,11 @@
 - >curl -d '{"playlist_id": "3"}' -H "Content-Type: application/json" -X DELETE http://127.0.0.1:5000/api/v1/resources/musicService/playlists
 
 
+
 ### How to list *ALL* playlists in the microservice
 1. While Flask is running go to:
 - >http://127.0.0.1:5000/api/v1/resources/musicService/playlists/all
+
 
 
 ### How to list *ALL PLAYLISTS CREATED BY A PARTICULAR USER*
@@ -115,6 +114,13 @@
 - >http://127.0.0.1:5000/api/v1/resources/musicService/playlists/user?username_id=noobmaster69
 
 
+
+
+//I think these will already be indexed automatically, so if we want
+	//the users to be able to change the order of songs in the playlist_id
+	//we might be able to use that, ALTHOUGH, he did not really say that we
+	//need to allow the users to edit the playlist
+	//he just said create, retrieve, delete, list all pl, and list pl created by user
 
 
 Track Table:  
