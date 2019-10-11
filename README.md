@@ -14,7 +14,7 @@
 **To retrieve a track from the Tracks Microservice:**
 1. You need to know the *track_id* of the track being retrieved
 - *If the **track_id** is not known, get it by retrieving all of tracks first and finding then necessary track_id*
--**To retrieve all of the tracks in the Tracks Microservice:**
+- **To retrieve all of the tracks in the Tracks Microservice:**
 >http://127.0.0.1:5000/api/v1/resources/musicService/tracks/all
 
 2. Query for the *track_id* by adding a "?" at the end of the URL to signify the start of a query.
