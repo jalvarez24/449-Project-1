@@ -4,7 +4,7 @@
 
 import flask
 import json
-from flask import request, jsonify, g, make_response, render_template 
+from flask import request, jsonify, g, make_response, render_template
 import sqlite3
 
 app = flask.Flask(__name__)
@@ -15,18 +15,18 @@ app.config.from_envvar('APP_CONFIG')
 #connection saved globally in 'g'
 @app.before_request
 def connect_to_db():
-	g.db = get_db()
+    g.db = get_db()
 
 
 def make_dicts(cursor, row):
-	return dict((cursor.description[idx][0], value) for idx, value in enumerate(row))
+    return dict((cursor.description[idx][0], value) for idx, value in enumerate(row))
 
 
 def get_db():
     db = getattr(g, '_database', None)
     if db is None:
         db = g._database = sqlite3.connect(app.config['DATABASE'])
-        g.db.execute('PRAGMA foreign_keys = ON')
+        db.execute('PRAGMA foreign_keys = ON')
         db.row_factory = make_dicts
     return db
 
@@ -82,7 +82,7 @@ def api_filter():
         return page_not_found(404)
 
     query = "SELECT * FROM Track WHERE track_title = \"" +track_title + "\";"
-    
+
     result = g.db.execute(query)
 
     found = result.fetchone()
@@ -156,7 +156,7 @@ def delete_track():
         #setting up response data
         g.db.execute(delete_user_query)
 
-        
+
 
         #create response to return
         response = make_response(jsonify('Track deleted'), 200)
@@ -166,7 +166,7 @@ def delete_track():
     return page_not_found(404)
 
 @app.route('/api/v1/resources/musicService/tracks/edit-track', methods=['PUT'])
-def edit_track():	
+def edit_track():
 
     input = request.get_json()
 
@@ -174,7 +174,7 @@ def edit_track():
         return constraint_violation(409)
 
     track_title_toUpdate = input['track_title']
-    artist_toUpdate = input['artist']  
+    artist_toUpdate = input['artist']
     newTrackTitle = input['newTrackTitle']
     newAlbumTitle = input['newAlbumTitle']
     newArtist = input['newArtist']
@@ -182,7 +182,7 @@ def edit_track():
     newUrlMedia = input['newUrlMedia']
     newUrlArt = input['newUrlArt']
 
-    
+
 
     #check if track_id in database before deletion
     # "SELECT track_title FROM Track WHERE track_title = Stan AND artist = Eminem "
