@@ -93,7 +93,6 @@ def playlist_filter():
 ### Create a new playlist
 @app.route('/api/v1/resources/musicService/playlists', methods=['POST'])
 def create_playlist():
-
     #takes in request (sent in with curl as JSON data)
     # and turn it into python dict. with 'get_json()' function
     input = request.get_json()
@@ -106,34 +105,28 @@ def create_playlist():
     playlist_title = input['playlist_title']
     description = None
     username_id = input['username_id']
-    
+
     #check if optional data was sent in, if not, already set to None
     if 'description' in input:
         description = input['description']
     
-    query = "SELECT * FROM Playlist WHERE playlist_title = \"" + playlist_title + "\";"
-    result = g.db.execute(query)
-    found = result.fetchone()
 
-    if found:
-        return constraint_violation(409)
 
-    # If user_name does not exist...
-    query = "SELECT * FROM Playlist WHERE username_id = \"" + username_id + "\";"
-    result = g.db.execute(query)
-    found = result.fetchone()
-
-    if not found:
-        return constraint_violation(409)
+    # #if user doesn not exist, they can't create a playlist
+    # query = "SELECT * FROM User WHERE user_name = \"" + username_id + "\";"
+    # result = g.db.execute(query)
+    # found = result.fetchone()
 
     params = (playlist_title, description, username_id)
 
-    g.db.execute("INSERT INTO Playlist VALUES(NULL, ?, ?, ?)", params) # This is what worked
-    #c.execute("SELECT * FROM Track ORDER BY track_id DESC LIMIT 1")
+    try:
+        g.db.execute("INSERT INTO Playlist(playlist_title, description, username_id) VALUES(?, ?, ?)", params) 
+    except:
+        return constraint_violation(409)
 
     location = 'http://127.0.0.1:5000/api/v1/resources/musicService/playlists?playlist_title='+ playlist_title
 
-    #create response to return
+    #  create response to return
     response = make_response(jsonify('New Playlist Created!'), 201)
     response.headers['Location'] = location
     return response
