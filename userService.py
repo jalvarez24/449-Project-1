@@ -1,18 +1,36 @@
+#
+############################## By Jayro Alvarez ###########################################
+#
 import flask
 import json
-from flask import request, jsonify, g, make_response
+import os
+from flask import request, jsonify, g, make_response, render_template 
 import sqlite3
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = flask.Flask(__name__)
 app.config.from_envvar('APP_CONFIG')
 
+#Functions to setup db: 
+###########################################################
 
-def make_dicts(cursor, row):
-    return dict((cursor.description[idx][0], value)
-                for idx, value in enumerate(row))
+#called right before any request to establish db connection
+#connection saved globally in 'g'
+@app.before_request
+def connect_to_db():
+    g.db = get_db()
 
 
+#call right after any request to commit changes to db and close db connection
+@app.teardown_appcontext
+def close_connection(exception):
+    db = getattr(g, '_database', None)
+    if db is not None:
+        db.commit()
+        db.close()
+
+
+#establishes connection to db, called in @app.before_request
 def get_db():
     db = getattr(g, '_database', None)
     if db is None:
@@ -21,257 +39,231 @@ def get_db():
     return db
 
 
-@app.teardown_appcontext
-def close_connection(exception):
-    db = getattr(g, '_database', None)
-    if db is not None:
-        db.close()
+#return a dictionary for everything in db
+def make_dicts(cursor, row):
+    return dict((cursor.description[idx][0], value)
+        for idx, value in enumerate(row))
 
 
-def query_db(query, args=(), one=False):
-    cur = get_db().execute(query, args)
-    rv = cur.fetchall()
-    cur.close()
-    return (rv[0] if rv else None) if one else rv
-
-
-@app.cli.command('init')
-def init_db():
-    with app.app_context():
-        db = get_db()
-        with app.open_resource('musicService.sql', mode='r') as f:
-            db.cursor().executescript(f.read())
-        db.commit()
-
-# Just some welcome page
-@app.route('/', methods=['GET'])
-def home():
-    return '''<h1>Team Awesome</h1>
-<p>A prototype API for a music microservice.</p>'''
-
+#ERROR HANDLERS: 
+###########################################################
 # What is shown if there is an error
 @app.errorhandler(404)
 def page_not_found(e):
-    return "<h1>404</h1><p>The resource could not be found.</p>", 404
+    return jsonify('HTTP 404 Not Found'), 404
+
+
+@app.errorhandler(409)
+def constraint_violation(e):
+    return jsonify('HTTP 409 Conflict'), 409
+
+
+# Home Page/User Documentation Route
+###########################################################
+@app.route('/', methods=['GET'])
+def home():
+    return render_template('user_guide.html')
 
 #
-############################## Jayro Alvarez #############################################
+############################## User Related Routes ######################################
 #
 
+############################## Create User ######################################
 @app.route('/api/v1/resources/musicService/users', methods=['POST'])
 def create_user():
-    #takes in request (sent in with curl as JSON data)
-    # and turn it into python dict. with 'get_json()' function
+    #get request json data
     input = request.get_json()
 
+    #required fields list to check if all input was correctly inputted
     required_fields = ['username', 'password', 'display_name', 'email']
-    # if not all required fields inputted return 404
+    # if not all required fields inputted 
     if not all([field in input for field in required_fields]):
-        error = jsonify({'response' : 'HTTP 404, Missing Required Fields',
-            'code' : '404',
-        })
-        return make_response(error, 404)
+        return constraint_violation(409)
 
+    #Assigning all inputs to fields
     username = input['username']
     password = input['password']
     display_name = input['display_name']
     email = input['email']
-    #initialize optional data to 'None'
+    #initialize optional field to None
+    #None turns to NULL when inserted into db
     homepage_url = None
+
     #check if optional data was sent in, if not, already set to None
     if 'homepage_url' in input:
         homepage_url = input['homepage_url']
 
+    #query to see if username already exists
+    query = "SELECT * FROM User WHERE username = \"" + username + "\";"
+    result = g.db.execute(query)
+
+    #return first row from query, returns None of nothing found
+    found = result.fetchone() 
+
+    #if username already exists
+    if found:
+        return constraint_violation(409)
+
     #hash inputted password:
     hashed_pw = generate_password_hash(password)
 
+    #insert user into db after all checks passed
     params = (username, hashed_pw, display_name, email, homepage_url)
+    g.db.execute("INSERT INTO User VALUES(?,?,?,?,?)", params)
 
-    conn = sqlite3.connect('musicService.db')
-    c = conn.cursor()
+    #set up location to be returned in response header
+    location = 'http://127.0.0.1:5000/api/v1/resources/musicService/users?username=' + username
 
-    #check if username already in database before insertion
-    c.execute("SELECT username FROM User WHERE username = \"" + username + "\";")
-    found = c.fetchone()
+    #create response
+    response = make_response(jsonify('New User Created!'), 201)
+    response.headers['Location'] = location
+    return response
 
-    #username already exists, return  HTTP 409 Conflict.
-    if found:
-        #setting up response data
-        data = jsonify({'response' : 'HTTP 409 Conflict',
-            'code' : '409',
-        })
 
-        #create response to return
-        return make_response(data)
-
-    c.execute("INSERT INTO User VALUES(?,?,?,?,?)", params)
-
-    conn.commit()
-    conn.close()
-
-    #setting up response data
-    data = jsonify({'response' : 'HTTP 201 Created',
-        'code' : '201',
-        'location' : 'http://127.0.0.1:5000/api/v1/resources/musicService/users?username=' + username,
-    })
-    #create response to return
-    return make_response(data, 201)
-
+############################## Get User ######################################
 @app.route('/api/v1/resources/musicService/users', methods=['GET'])
 def retrieve_profile():
-    input = request.get_json()
+    #get query params from URL
+    query_parameters = request.args
 
-    if not 'username' in input.keys():
-        error = jsonify({'response' : 'HTTP 404, Missing Required Fields',
-            'code' : '404',
-        })
-        return make_response(error, 404)
+    #get username
+    username = query_parameters.get('username')
 
-    username = input['username']
-    query = "SELECT * FROM User WHERE username = \"" + username + "\";"
-    to_filter = [username]
-    result = query_db(query)
-
-    #If no user is found
-    if not result:
+    #check is username is empty
+    if username is None:
         return page_not_found(404)
 
-    #pull out 1st entry in query result => contain dict. with all info in user
-    result = result[0]
+    #setup query
+    query = "SELECT * FROM User WHERE username = \"" + username + "\";"
 
-    #get rid of password prior to returning result
-    del result['password']
+    #run query in db
+    result = g.db.execute(query)
 
-    return jsonify(result)
+    #return first row from query, returns None of nothing found
+    found = result.fetchone()
 
+    #If no user is found
+    if not found:
+        return page_not_found(404)
+
+    #found contains username from db
+    #get rid of password prior to returning found
+    del found['password']
+
+    #put the user profile in the response, default return is 200
+    return make_response(jsonify(found))
+
+
+############################## Delete User ######################################
 @app.route('/api/v1/resources/musicService/users', methods=['DELETE'])
 def delete_user():
+    #get request json data
     input = request.get_json()
 
+    #if no username is passed in/'username' spelled incorrectly
     if not 'username' in input.keys():
-        error = jsonify({'response' : 'HTTP 404, Missing Required Fields',
-            'code' : '404',
-        })
-        return make_response(error, 404)
+        return constraint_violation(409)
 
+    #save username
     username = input['username']
 
-    conn = sqlite3.connect('musicService.db')
-    c = conn.cursor()
+    #query to see if username already exists
+    query = "SELECT username FROM User WHERE username = \"" + username + "\";"
+    result = g.db.execute(query)
 
-    #check if username in database before deletion
-    c.execute("SELECT username FROM User WHERE username = \"" + username + "\";")
-    found = c.fetchone()
+    #return first row from query, returns None of nothing found
+    found = result.fetchone() 
 
-    #username already exists, return  HTTP 409 Conflict.
+    #user name found, delete from db
     if found:
-        c.execute("DELETE FROM User WHERE username = \"" + username + "\";")
-        #setting up response data
-        data = jsonify({'response' : 'HTTP 200 OK',
-            'code' : '200',
-        })
+        #delete user query
+        delete_user_query = "DELETE FROM User WHERE username = \"" + username + "\";"
+        g.db.execute(delete_user_query)
 
-        conn.commit()
-        conn.close()
-
-        #create response to return
-        return make_response(data, 200)
+        #user deleted, return is 200
+        response = make_response(jsonify('User deleted'), 200)
+        return response
 
     #if no user found
     return page_not_found(404)
 
+
+########################## Change User Password ##################################
 @app.route('/api/v1/resources/musicService/users/change-password', methods=['PUT'])
 def change_password():
+    #get request json data
     input = request.get_json()
 
+    #if username or password not inputted
     if not 'username' in input.keys() or not 'newpassword' in input.keys():
-        error = jsonify({'response' : 'HTTP 404, Missing Required Fields',
-            'code' : '404',
-        })
-        return make_response(error, 404)
+        return page_not_found(404)
 
+    #save username in var
     username = input['username']
 
     #hash new password
     new_password = generate_password_hash(input['newpassword'])
 
-    conn = sqlite3.connect('musicService.db')
-    c = conn.cursor()
+    #query to see if username already exists
+    query = "SELECT username FROM User WHERE username = \"" + username + "\";"
+    result = g.db.execute(query)
 
-    #check if username in database before deletion
-    c.execute("SELECT username FROM User WHERE username = \"" + username + "\";")
-    found = c.fetchone()
+    #return first row from query, returns None of nothing found
+    found = result.fetchone() 
 
-    #username already exists, return  HTTP 409 Conflict.
+    #user name found, change password
     if found:
-        c.execute("UPDATE User SET password = \"" + new_password + "\" WHERE username = \"" + username + "\";")
-        #setting up response data
-        data = jsonify({'response' : 'HTTP 200 OK',
-            'code' : '200',
-        })
-
-        conn.commit()
-        conn.close()
-
-        #create response to return
-        return make_response(data, 200)
+        update_query = "UPDATE User SET password = \"" + new_password + "\" WHERE username = \"" + username + "\";"
+        g.db.execute(update_query)
+        #create response to return, default return is 200
+        response = make_response(jsonify(username + '\'s password was changed!'), 200)
+        return response
 
     #if no user found
     return page_not_found(404)
 
+
+############################## Authenticate User #####################################
 @app.route('/api/v1/resources/musicService/users/authenticate-user', methods=['POST'])
 def authenticate_user():
-    #takes in request (sent in with curl as JSON data)
-    # and turn it into python dict. with 'get_json()' function
+    #get request json data
     input = request.get_json()
 
+    #required fields list to check if all input was correctly inputted
     required_fields = ['username', 'password']
-    # if not all required fields inputted return 404
+    #if not all required fields inputted 
     if not all([field in input for field in required_fields]):
-        error = jsonify({'response' : 'HTTP 404, Missing Required Fields',
-            'code' : '404',
-        })
-        return make_response(error, 404)
+        return constraint_violation(409)
 
+    #save input in vars
     username = input['username']
     password = input['password']
 
-    #create db connection
-    conn = sqlite3.connect('musicService.db')
-    c = conn.cursor()
-
+    #first see if username is found and return username and password
     query = "SELECT username, password FROM User WHERE username = \"" + username + "\";"
-    result = query_db(query)
-    conn.commit()
-    conn.close()
+    result = g.db.execute(query)
 
-    #If no user is found, return 404
-    if not result:
-        error = jsonify({'response' : 'HTTP 404 Not Found',
-            'code' : '404',
-        })
-        return make_response(error, 404)
+    #return first row from query, returns None of nothing found
+    found = result.fetchone() 
 
-    #pull out 1st entry in query result => contain dict. with username and password
-    result = result[0]
+    #If no user is found, return 403
+    if not found:
+        return constraint_violation(403)
 
+    #found contains username and hashed pw from db 
     #check the stored, hashed value in db with passed in parameter
-    password_check = check_password_hash(result['password'], password)
+    password_check = check_password_hash(found['password'], password)
 
     #if check came back true:
     if password_check == True:
-        data = jsonify({'response' : 'HTTP 200 OK',
-            'code' : '200',
-        })
+        #create response to return, default return is 200
+        location = 'http://127.0.0.1:5000/api/v1/resources/musicService/users?username=' + username
+        response = make_response(jsonify(username + '\'s username and password are correct.'), 200)
+        response.headers['Authenticated'] = True
+        response.headers['Location of Authenticated User'] = location
+        return response
 
-        #create response to return
-        return make_response(data, 200)
-
-    #otherwise, return a 404 not found
-    error = jsonify({'response' : 'HTTP 404 Not Found',
-        'code' : '404',
-    })
-    return make_response(error, 404)
+    return page_not_found(404)
 
 #
 ############################## END OF User MICROSERVICE CODE ######################################

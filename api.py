@@ -1,10 +1,10 @@
-# Music Microservices APIs
+# Music Microservices APIs Project
 # CPSC 449- Backend Engineering
 #This file initializes our DB
 
 import flask
 import json
-from flask import request, jsonify, g, make_response
+from flask import request, jsonify, g, render_template 
 import sqlite3
 
 app = flask.Flask(__name__)
@@ -38,23 +38,3 @@ def close_connection(exception):
     db = getattr(g, '_database', None)
     if db is not None:
         db.close()
-
-
-def query_db(query, args=(), one=False):
-    cur = get_db().execute(query, args)
-    rv = cur.fetchall()
-    cur.close()
-    return (rv[0] if rv else None) if one else rv
-
-
-# Our Home Page/User Documentation Page
-@app.route('/', methods=['GET'])
-def home():
-    return  '''
-            <h1>Team Awesome</h1>
-            <h2> User Guide for Microservices Application</h2>
-            <h3>A prototype API for a music microservice.</h3>
-            <p>
-                First initialize the database with: <i>flask init</i>
-            </p>
-            '''

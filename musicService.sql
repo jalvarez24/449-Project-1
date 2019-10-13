@@ -67,11 +67,15 @@ INSERT INTO Track(track_title, album_title, artist, length_seconds, url_media, u
 
 --Inserting sample users
 INSERT INTO User(username, password, display_name, email, homepage_url)
-  VALUES('jayro123', 'mySecretPassword', 'jayroAY', 'jayro@gmail.com', 'https://jayro123.com');
+  VALUES('jayro123', 
+  'pbkdf2:sha256:150000$pvhm08BM$9b18eb411ee17a6ac6a4cc24470f0d4b44f462202a01afef7b62b8217c26419e',
+  'jayroAY', 'jayro@gmail.com', 'https://jayro123.com');
 INSERT INTO User(username, password, display_name, email, homepage_url)
-  VALUES('ian123', 'mySecretPassword', 'ianAY', 'ian@gmail.com', 'https://ian123.com');
+  VALUES('ian123', 'pbkdf2:sha256:150000$pvhm08BM$9b18eb411ee17a6ac6a4cc24470f0d4b44f462202a01afef7b62b8217c26419e',
+  'ianAY', 'ian@gmail.com', 'https://ian123.com');
 INSERT INTO User(username, password, display_name, email, homepage_url)
-  VALUES('brendan123', 'mySecretPassword', 'brendanAY', 'brendan@gmail.com', 'https://brendan123.com');
+  VALUES('brendan123', 'pbkdf2:sha256:150000$pvhm08BM$9b18eb411ee17a6ac6a4cc24470f0d4b44f462202a01afef7b62b8217c26419e',
+  'brendanAY', 'brendan@gmail.com', 'https://brendan123.com');
 
 --Inserting sample playlists (Can insert now that there is a user to link to)
 INSERT INTO Playlist(playlist_title, description, username_id) VALUES('Chill Playlist', 'For times to chill.', 'jayro123');
