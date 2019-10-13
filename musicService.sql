@@ -51,7 +51,7 @@ CREATE TABLE User (
 CREATE TABLE Description (
   username VARCHAR NOT NULL,
   track_id INTEGER NOT NULL,
-  description_text VARCHAR,
+  description_text VARCHAR NOT NULL,
   FOREIGN KEY (username) REFERENCES User(username),
   FOREIGN KEY (track_id) REFERENCES Track(track_id)
 );

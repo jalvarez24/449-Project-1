@@ -1,6 +1,93 @@
-<h1>Team Awesome</h1>
-    <h2> User Guide for Microservices Application</h2>
-    <h3>A prototype API for a music microservice.</h3>
-    <p>
-        First initialize the database with: <i>flask init</i>
-    </p>
+<html>
+    <body style="text-align: center;">
+        <header>
+            <h1>Team Awesome</h1>
+            <h2> User Guide for Microservices Application</h2>
+            <h3>A prototype API for a music microservice.</h3>
+            <p>
+                First initialize the database with: <i>flask init</i>
+            </p>
+            <hr style="margin-bottom: 0px;"/>
+            <div style="background-color:lightgray; padding: 7px 7px;">
+                <button id="track" disabled>Tracks Guide</button>
+                <button id="user">Users Guide</button>   
+                <button id="descrip">Description Guide</button>          
+                <button id="playlist">Playlist Guide</button>
+            </div>
+        </header>
+        <hr <hr style="margin-top: 0px;"/>
+        <div style="width:80%; margin:0 auto;">
+            <div id="trackDiv" style="display:block;">
+                Track Microservices:
+                <ul style="text-align: left;">
+                    <li>Create a User</li>
+                    <li>Retrieve a Profile</li>
+                    <li>Delete a User</li>
+                    <li>Change a User's Password</li>
+                    <li>Authenticate a User</li>
+                </ul>
+            </div>
+            <div id="userDiv" style="display:none;">
+                User Microservices:
+                <ul style="text-align: left;">
+                    <li>Create a User</li>
+                    <li>Retrieve a Profile</li>
+                    <li>Delete a User</li>
+                    <li>Change a User's Password</li>
+                    <li>Authenticate a User</li>
+                </ul>         
+            </div>
+            <div id="descripDiv" style="display:none">
+                Description Microservices:
+                <ul style="text-align: left;">
+                    <li>Create a User</li>
+                    <li>Retrieve a Profile</li>
+                    <li>Delete a User</li>
+                    <li>Change a User's Password</li>
+                    <li>Authenticate a User</li>
+                </ul>
+            </div>
+            <div id="playlistDiv" style="display:none">
+                Playlist Microservices:
+                <ul style="text-align: left;">
+                    <li>Create a User</li>
+                    <li>Retrieve a Profile</li>
+                    <li>Delete a User</li>
+                    <li>Change a User's Password</li>
+                    <li>Authenticate a User</li>
+                </ul>
+            </div>
+        </div>
+        <script>
+            let onBut = document.getElementById("track");
+            let tBut = document.getElementById("track");
+            let uBut = document.getElementById("user");
+            let dBut = document.getElementById("descrip");
+            let pBut = document.getElementById("playlist");
+
+            let onDiv = document.getElementById("trackDiv");
+            let tDiv = document.getElementById("trackDiv");
+            let uDiv = document.getElementById("userDiv");
+            let dDiv = document.getElementById("descripDiv");
+            let pDiv = document.getElementById("playlistDiv");
+
+            tBut.onclick = () => { changeView(tBut, tDiv); }
+
+            uBut.onclick = () => { changeView(uBut, uDiv); }
+            
+            dBut.onclick = () => { changeView(dBut, dDiv); }
+
+            pBut.onclick = () => { changeView(pBut, pDiv); }
+
+            changeView = (currentBut, currentDiv) => {
+                onBut.disabled = false;
+                onBut = currentBut;
+                onDiv.style.display = "none";
+                onDiv = currentDiv;
+
+                currentBut.disabled = true;
+                currentDiv.style.display = "block";
+            }
+        </script>
+    </body>
+</html>

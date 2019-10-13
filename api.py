@@ -1,10 +1,9 @@
 # Music Microservices APIs Project
 # CPSC 449- Backend Engineering
-#This file initializes our DB
+#This file initializes our DB from our .sql schema file
 
 import flask
-import json
-from flask import request, jsonify, g, render_template 
+from flask import g
 import sqlite3
 
 app = flask.Flask(__name__)
@@ -28,7 +27,6 @@ def get_db():
     db = getattr(g, '_database', None)
     if db is None:
         db = g._database = sqlite3.connect(app.config['DATABASE'])
-        db.execute('PRAGMA foreign_key = ON')
         db.row_factory = make_dicts
     return db
 

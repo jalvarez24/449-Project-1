@@ -4,10 +4,8 @@
 
 import flask
 import json
-import os
 from flask import request, jsonify, g, make_response, render_template 
 import sqlite3
-from werkzeug.security import generate_password_hash, check_password_hash
 
 
 app = flask.Flask(__name__)
@@ -29,6 +27,7 @@ def get_db():
     db = getattr(g, '_database', None)
     if db is None:
         db = g._database = sqlite3.connect(app.config['DATABASE'])
+        db.execute('PRAGMA foreign_keys = ON')
         db.row_factory = make_dicts
     return db
 
@@ -184,17 +183,8 @@ def delete_playlist():
         response = make_response(jsonify('Playlist deleted'), 200)
         return response
 
-        #create response to return
-        return page_not_found(404)
-
     #if no user found
     return page_not_found(404)
-
-# What is shown if there is an error
-@app.errorhandler(404)
-def page_not_found(e):
-    return "<h1>404</h1><p>The resource could not be found.</p>", 404
-
 
 #
 ############################## END OF PLAYLIST MICROSERVICE CODE ######################################

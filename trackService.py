@@ -4,11 +4,8 @@
 
 import flask
 import json
-import os
 from flask import request, jsonify, g, make_response, render_template 
 import sqlite3
-from werkzeug.security import generate_password_hash, check_password_hash
-
 
 app = flask.Flask(__name__)
 app.config.from_envvar('APP_CONFIG')
@@ -29,6 +26,7 @@ def get_db():
     db = getattr(g, '_database', None)
     if db is None:
         db = g._database = sqlite3.connect(app.config['DATABASE'])
+        g.db.execute('PRAGMA foreign_keys = ON')
         db.row_factory = make_dicts
     return db
 

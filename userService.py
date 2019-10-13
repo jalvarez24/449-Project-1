@@ -1,9 +1,8 @@
 #
-############################## By Jayro Alvarez ###########################################
+############################## By Jayro Alvarez #######################################
 #
 import flask
 import json
-import os
 from flask import request, jsonify, g, make_response, render_template 
 import sqlite3
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -21,7 +20,7 @@ def connect_to_db():
     g.db = get_db()
 
 
-#call right after any request to commit changes to db and close db connection
+#called right after any request to commit changes to db and close db connection
 @app.teardown_appcontext
 def close_connection(exception):
     db = getattr(g, '_database', None)
@@ -35,6 +34,7 @@ def get_db():
     db = getattr(g, '_database', None)
     if db is None:
         db = g._database = sqlite3.connect(app.config['DATABASE'])
+        db.execute('PRAGMA foreign_keys = ON')
         db.row_factory = make_dicts
     return db
 
@@ -196,7 +196,7 @@ def change_password():
 
     #if username or password not inputted
     if not 'username' in input.keys() or not 'newpassword' in input.keys():
-        return page_not_found(404)
+        return constraint_violation(409)
 
     #save username in var
     username = input['username']
