@@ -2,7 +2,6 @@ import flask
 import json
 from flask import request, jsonify, g, make_response
 import sqlite3
-from werkzeug.security import generate_password_hash, check_password_hash
 
 app = flask.Flask(__name__)
 #gets the name of the database

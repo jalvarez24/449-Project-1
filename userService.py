@@ -5,7 +5,6 @@ import sqlite3
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = flask.Flask(__name__)
-#gets the name of the database
 app.config.from_envvar('APP_CONFIG')
 
 
