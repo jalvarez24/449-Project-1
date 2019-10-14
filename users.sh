@@ -1,6 +1,6 @@
 users=("avery123" "stroustrup123" "lovelace123")
 passwords=("password123" "goodpass" "badpass")
-names=("kenyt" "bjorne" "ada")
+names=("kenytt" "bjorne" "ada")
 emails=("avery@mail.com" "c++@mail.com" "programmerOG@mail.com")
 len=${#users[@]}
 
