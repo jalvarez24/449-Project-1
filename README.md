@@ -160,3 +160,26 @@ Descriptions Table:
   (FK)"track_id" : "1"  
   "description" : "This song was pretty lit!"  
 ]  
+
+# Operations
+
+### How to run Procfile
+To easily spin up all four microservices, we employ a Procfile.
+In the terminal, navigate to the directory containing the Procfile and run:
+
+`foreman start`
+
+### How to add Users via shellscript
+Steps:
+1. Shell script files must be explicitly given execute permission before they can be run.
+To do so, run the following command.
+Assume the file name is users.sh.
+
+*Note: permission only needs to be given once per file, then each file that has been given permission can be run as many times as needed.*
+
+`chmod +x users.sh`
+
+2. To add new users to our REST api, we will use a pre-filled shell script.  
+To add the users, run the following command:
+
+`./users.sh`
