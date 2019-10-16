@@ -16,12 +16,12 @@ media_urls=("https://www.youtube.com/watch?v=PKFcaXd5G8c&list=RDMMPKFcaXd5G8c&st
 len=${#track_titles[@]}
 
 
-# for (( i = 0; i<$len; i++ )); do \
-#   curl -X POST \
-#   -H "Content-Type: application/json" \
-#   --data '{"track_title":"'"${track_titles[i]}"'","album_title":"'"${album_titles[i]}"'","artist":"'"${artists[i]}"'","length_seconds":"'"${length_seconds[i]}"'","url_media":"'"${media_urls[i]}"'"}' \
-#   http://127.0.0.1:5001/api/v1/resources/musicService/tracks
-# done
+ for (( i = 0; i<$len; i++ )); do 
+   curl -X POST \
+   -H "Content-Type: application/json" \
+   --data '{"track_title":"'"${track_titles[i]}"'","album_title":"'"${album_titles[i]}"'","artist":"'"${artists[i]}"'","length_seconds":"'"${length_seconds[i]}"'","url_media":"'"${media_urls[i]}"'"}' \
+   http://127.0.0.1:5001/api/v1/resources/musicService/tracks
+ done
 
 
 #
@@ -36,12 +36,12 @@ emails=("avery@mail.com" "c++@mail.com" "programmerOG@mail.com")
 len=${#users[@]}
 
 
-# for (( i = 0; i<$len; i++ )); do \
-#   curl -X POST \
-#   -H "Content-Type: application/json" \
-#   --data '{"username":"'"${users[i]}"'","password":"'"${passwords[i]}"'","display_name":"'"${names[i]}"'","email":"'" ${emails[i]} "'"}' \
-#   http://127.0.0.1:5000/api/v1/resources/musicService/users
-# done
+ for (( i = 0; i<$len; i++ )); do
+   curl -X POST \
+   -H "Content-Type: application/json" \
+   --data '{"username":"'"${users[i]}"'","password":"'"${passwords[i]}"'","display_name":"'"${names[i]}"'","email":"'" ${emails[i]} "'"}' \
+   http://127.0.0.1:5000/api/v1/resources/musicService/users
+ done
 
 
 
