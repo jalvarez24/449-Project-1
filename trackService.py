@@ -18,6 +18,12 @@ def connect_to_db():
     g.db = get_db()
 
 
+def query_db(query, args=(), one=False):
+    cur = g.db.execute(query, args)
+    rv = cur.fetchall()
+    return (rv[0] if rv else None) if one else rv
+
+
 def make_dicts(cursor, row):
     return dict((cursor.description[idx][0], value) for idx, value in enumerate(row))
 
@@ -35,8 +41,8 @@ def get_db():
 def close_connection(exception):
     db = getattr(g, '_database', None)
     if db is not None:
-    	db.commit()
-    	db.close()
+        db.commit()
+        db.close()
 
 
 @app.errorhandler(404)
@@ -129,7 +135,7 @@ def create_track():
     #c.execute("SELECT * FROM Track ORDER BY track_id DESC LIMIT 1")
 
     location = 'http://127.0.0.1:5001/api/v1/resources/musicService/tracks?track_title='+track_title
-	#create response to return
+    #create response to return
     response = make_response(jsonify('New Track Created!'), 201)
     response.headers['Location'] = location
     return response
@@ -138,21 +144,49 @@ def create_track():
 def delete_track():
     input = request.get_json()
 
-    if not 'track_title' in input.keys():
+    if not 'track_title' in input.keys() or not 'artist' in input.keys():
         return constraint_violation(409)
 
     track_title = input['track_title']
+    artist = input ['artist']
 
-    #check if track_id in database before deletion
-    # "SELECT track_id FROM Track WHERE track_id = 5 "
-    query = "SELECT track_title FROM Track WHERE track_title = \"" + track_title + "\";"
+
+    # Get track_id where the track_title = to the track_title in the input
+    query_for_track_id = "SELECT track_id FROM Track WHERE track_title = \"" + track_title + "\" AND artist = \"" + artist+  "\";"
+    result = g.db.execute(query_for_track_id)
+    found = result.fetchone() # this now holds the track_id to be checked on the Tracks_List table
+
+    # search if the track_id of this track_title exist in Track_List if it does delete the rows that has this track_id first Track_List table THEN delete the track from the Track table
+    query_for_TrackList = "SELECT track_id FROM Tracks_List WHERE track_id = " + str(found['track_id']) + ";"
+    result = g.db.execute(query_for_TrackList)
+    found_inTrackList = result.fetchone()
+
+    # Delete the rows that has this track_id from Tracks_List
+    if found_inTrackList:
+        delete_from_TrackList = "DELETE FROM Tracks_List WHERE track_id= " + str(found_inTrackList['track_id']) +  ";"
+        g.db.execute(delete_from_TrackList)
+
+
+    # Delete row from Description table
+    query_for_Description = "SELECT track_id FROM Description WHERE track_id = " + str(found['track_id']) +  ";"
+    result = g.db.execute(query_for_Description)
+    found_inDescription = result.fetchone()
+
+    if found_inDescription:
+        delete_from_Description = "DELETE FROM Description WHERE track_id= " + str(found_inTrackList['track_id']) +  ";"
+        g.db.execute(delete_from_Description)
+
+
+
+
+    # Now that this track being deleted is not in Tracks_List anymore we could finally delete it from the Track Table
+    query = "SELECT track_title FROM Track WHERE track_title = \"" + track_title + "\" AND artist = \"" + artist+  "\";"
     result = g.db.execute(query)
-
     found = result.fetchone()
 
-    #track_id already exists, return  HTTP 409 Conflict.
+
     if found:
-        delete_user_query = "DELETE FROM Track WHERE track_title= \"" + track_title + "\";"
+        delete_user_query = "DELETE FROM Track WHERE track_title= \"" + track_title + "\" AND artist = \"" + artist+  "\";"
         #setting up response data
         g.db.execute(delete_user_query)
 
