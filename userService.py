@@ -233,7 +233,7 @@ def authenticate_user():
     required_fields = ['username', 'password']
     #if not all required fields inputted 
     if not all([field in input for field in required_fields]):
-        return constraint_violation(409)
+        return page_not_found(404)
 
     #save input in vars
     username = input['username']
@@ -246,9 +246,9 @@ def authenticate_user():
     #return first row from query, returns None of nothing found
     found = result.fetchone() 
 
-    #If no user is found, return 403
+    #If no user is found, return 409
     if not found:
-        return constraint_violation(403)
+        return page_not_found(404)
 
     #found contains username and hashed pw from db 
     #check the stored, hashed value in db with passed in parameter

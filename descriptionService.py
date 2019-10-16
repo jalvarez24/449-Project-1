@@ -93,7 +93,7 @@ def set_user_description():
         return constraint_violation(409)
 
     #set up location to be returned in response header
-    location = 'http://127.0.0.1:5002/api/v1/resources/musicService/descriptions?username=' + username + '&track_id=' + track_id
+    location = 'http://127.0.0.1:5002/api/v1/resources/musicService/descriptions?username=' + username + '&track_id=' + str(track_id)
 
     #create response
     response = make_response(jsonify('New Description Created!'), 201)

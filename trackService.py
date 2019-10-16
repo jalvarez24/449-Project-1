@@ -156,6 +156,9 @@ def delete_track():
     result = g.db.execute(query_for_track_id)
     found = result.fetchone() # this now holds the track_id to be checked on the Tracks_List table
 
+    if not found:
+        return page_not_found(404)
+
     # search if the track_id of this track_title exist in Track_List if it does delete the rows that has this track_id first Track_List table THEN delete the track from the Track table
     query_for_TrackList = "SELECT track_id FROM Tracks_List WHERE track_id = " + str(found['track_id']) + ";"
     result = g.db.execute(query_for_TrackList)
@@ -163,7 +166,7 @@ def delete_track():
 
     # Delete the rows that has this track_id from Tracks_List
     if found_inTrackList:
-        delete_from_TrackList = "DELETE FROM Tracks_List WHERE track_id= " + str(found_inTrackList['track_id']) +  ";"
+        delete_from_TrackList = "DELETE FROM Tracks_List WHERE track_id= " + str(found['track_id']) +  ";"
         g.db.execute(delete_from_TrackList)
 
 
@@ -173,12 +176,12 @@ def delete_track():
     found_inDescription = result.fetchone()
 
     if found_inDescription:
-        delete_from_Description = "DELETE FROM Description WHERE track_id= " + str(found_inTrackList['track_id']) +  ";"
+        delete_from_Description = "DELETE FROM Description WHERE track_id= " + str(found['track_id']) +  ";"
         g.db.execute(delete_from_Description)
 
 
 
-
+    '''
     # Now that this track being deleted is not in Tracks_List anymore we could finally delete it from the Track Table
     query = "SELECT track_title FROM Track WHERE track_title = \"" + track_title + "\" AND artist = \"" + artist+  "\";"
     result = g.db.execute(query)
@@ -186,18 +189,19 @@ def delete_track():
 
 
     if found:
-        delete_user_query = "DELETE FROM Track WHERE track_title= \"" + track_title + "\" AND artist = \"" + artist+  "\";"
-        #setting up response data
-        g.db.execute(delete_user_query)
+        '''
+    delete_user_query = "DELETE FROM Track WHERE track_title= \"" + track_title + "\" AND artist = \"" + artist+  "\";"
+    #setting up response data
+    g.db.execute(delete_user_query)
 
 
 
-        #create response to return
-        response = make_response(jsonify('Track deleted'), 200)
-        return response
+    #create response to return
+    response = make_response(jsonify('Track deleted'), 200)
+    return response
 
     #if no user found
-    return page_not_found(404)
+    #return page_not_found(404)
 
 @app.route('/api/v1/resources/musicService/tracks/edit-track', methods=['PUT'])
 def edit_track():
