@@ -52,18 +52,67 @@
             <div id="userDiv" style="display:none;">
                 User Microservices:
                 <ul style="text-align: left;">
-                    <li>Create a User</li>
-                    <li>Retrieve a Profile</li>
-                    <li>Delete a User</li>
-                    <li>Change a User's Password</li>
-                    <li>Authenticate a User</li>
+                    <li>To <b>Create a User</b>, send a POST request in JSON format to: <i>http://127.0.0.1:5000/api/v1/resources/musicService/users</i>
+                        </br>Post must have these fields:
+                        <ul>
+                            <li>username</li>
+                            <li>password</li>
+                            <li>display_name</li>
+                            <li>email</li>
+                            <li>homepage_url <i>(Optional)</i></li>
+                        </ul> 
+                    </li>
+                    </br>
+                    <li>
+                        To <b>Retrieve a Profile</b>, go to URL: <i>http://127.0.0.1:5000/api/v1/resources/musicService/users?username=<b>user</b></i>
+                        </br>Replace <b>user</b> at end of URL with username of user you'd like to retrieve.
+                    </li>
+                    </br>
+                    <li>
+                        To <b>Delete a User</b>, send a DELETE request in JSON format to: <i>http://127.0.0.1:5000/api/v1/resources/musicService/users</i>
+                        </br>
+                        <b>Post requires a username field.</b> 
+                    </li>
+                    </br>
+                    <li>
+                        To <b>Change a User's Password</b>, send a PUT request in JSON format to: <i>http://127.0.0.1:5000/api/v1/resources/musicService/users/change-password</i>
+                        </br>Post must have these fields:
+                        <ul>
+                            <li>username</li>
+                            <li>newpassword</li>
+                        </ul> 
+                    </li>
+                    </br>
+                    <li>
+                        To <b>Authenticate a User</b>, send a POST request in JSON format to: <i>http://127.0.0.1:5000/api/v1/resources/musicService/users/authenticate-user</i>
+                        </br>Post must have these fields:
+                        <ul>
+                            <li>username</li>
+                            <li>newpassword</li>
+                        </ul> 
+                    </li>
                 </ul>
             </div>
+            
             <div id="descripDiv" style="display:none">
                 Description Microservices:
                 <ul style="text-align: left;">
-                    <li>Set a user's description of a track</li>
-                    <li>Retrieve a user's description of a track</li>
+                    <li>
+                        To <b>Set a User's Description of a Track</b>, send a POST request in JSON format to: <i>http://127.0.0.1:5002/api/v1/resources/musicService/descriptions</i>
+                        </br>Post must have these fields:
+                        <ul>
+                            <li>username</li>
+                            <li>track_id</li>
+                            <li>description_text</li>
+                        </ul> 
+                    </li>
+                    </br>
+                    <li>
+                        To <b>Retrieve a User's Description of a Track</b>, go to URL: 
+                        <br>
+                        <i>http://127.0.0.1:5002/api/v1/resources/musicService/descriptions?username=<b>username</b>&track_id=<b>track_id</b></i>
+                        </br>Replace <b>username</b> at end of URL with username of user's description you'd like to retrieve and replace <b>track_id</b> of track_id of the specific track.
+                    </li>
                 </ul>
             </div>
             <div id="playlistDiv" style="display:none">
