@@ -51,3 +51,14 @@ len=${#users[@]}
 
 
 curl -d '{"username" : "lovelace123", "track_id" : "1", "description_text" : "This song cured my depression."}' -H "Content-Type: application/json" -X POST http://127.0.0.1:5002/api/v1/resources/musicService/descriptions
+curl -d '{"username" : "lovelace123", "track_id" : "3", "description_text" : "You get a sunflower, and YOU get a sunflower!"}' -H "Content-Type: application/json" -X POST http://127.0.0.1:5002/api/v1/resources/musicService/descriptions
+
+
+
+#
+## Start of the POST request scripts to add playlists to the database, using the playlists microservice
+#
+
+
+curl -v -d '{"playlist_title" : "The Feels Train", "description" : "Curl up and cry.", "username_id" : "ian123"}' -H "Content-Type: application/json" -X POST http://127.0.0.1:5003/api/v1/resources/musicService/playlists
+curl -v -d '{"playlist_title" : "Tunes to Program to", "description" : "We hackin now boiz.  Im in.", "username_id" : "brendan123"}' -H "Content-Type: application/json" -X POST http://127.0.0.1:5003/api/v1/resources/musicService/playlists
