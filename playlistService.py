@@ -162,6 +162,22 @@ def delete_playlist():
 
     playlist_title = input['playlist_title']
 
+
+    # Get track_id where the track_title = to the track_title in the input
+    query_for_playlist_id = "SELECT playlist_id FROM Playlist WHERE playlist_title = \"" + playlist_title + "\";"
+    result = g.db.execute(query_for_playlist_id)
+    found = result.fetchone() # this now holds the track_id to be checked on the Tracks_List table
+
+    query_for_TrackList = "SELECT playlist_id FROM Tracks_List WHERE playlist_id = " + str(found['playlist_id']) + ";"
+    result = g.db.execute(query_for_TrackList)
+    found_inTrackList = result.fetchone()
+
+    # Delete the rows that has this track_id from Tracks_List
+    if found_inTrackList:
+        delete_from_TrackList = "DELETE FROM Tracks_List WHERE playlist_id= " + str(found_inTrackList['playlist_id']) +  ";"
+        g.db.execute(delete_from_TrackList)
+
+
     #check if track_id in database before deletion
     # "SELECT track_id FROM Track WHERE track_id = 5 "
     query = "SELECT playlist_title FROM Playlist WHERE playlist_title = \"" + playlist_title + "\";"
