@@ -4,27 +4,56 @@
             <h1>Team Awesome</h1>
             <h2> User Guide for Microservices Application</h2>
             <h3>A prototype API for a music microservice.</h3>
-            <p>
+            <p style="text-decoration: line-through;">
                 First initialize the database with: <i>flask init</i>
             </p>
+            <p>Through the beauty of Makefiles, we can initialize and spin up all four microservices with one command!</p>
+            <div style="text-align: left; width: 25%; margin: 0 auto;">
+                <p>In the terminal, run: <span style="background: #ddd; padding: 5px; font-size: 16px; font-family: monospace;">make init</span></p>
+                <p>This will run two commands for you.  It runs 
+            </div>
+                <ol style="text-align: left; width: 25%; margin: 0 auto;">
+                    <li><strong>flask init</strong> to initialize the database</li>
+                    <li><strong>foreman start</strong> To spin up our four microservices.</li>
+                </ol>
+            </p>
+
+
+            <hr>
+            <p style="font-size: 18px;">
+                Now that the database is set up and the four services are up and running, feel free to test the various routes.  Or, see how to run the shell scripts.
+            </p>
+
+
+
+
             <hr style="margin-bottom: 0px;"/>
             <div style="background-color:lightgray; padding: 7px 7px;">
-                <button id="track" disabled>Tracks Guide</button>
-                <button id="user">Users Guide</button>
-                <button id="descrip">Descriptions Guide</button>
-                <button id="playlist">Playlists Guide</button>
+                <button style="font-size: 12px; border-radius: 5px; padding: 10px; font-family: monospace;" id="scripts">How to use Shellscripts</button>
+                <button style="font-size: 12px; border-radius: 5px; padding: 10px; font-family: monospace;" id="track" disabled>Tracks Guide</button>
+                <button style="font-size: 12px; border-radius: 5px; padding: 10px; font-family: monospace;" id="user">Users Guide</button>
+                <button style="font-size: 12px; border-radius: 5px; padding: 10px; font-family: monospace;" id="descrip">Descriptions Guide</button>
+                <button style="font-size: 12px; border-radius: 5px; padding: 10px; font-family: monospace;" id="playlist">Playlists Guide</button>
             </div>
         </header>
-        <hr <hr style="margin-top: 0px;"/>
+        <hr style="margin-top: 0px;"/>
         <div style="width:80%; margin:0 auto;">
             <div id="trackDiv" style="display:block;">
                 Track Microservices:
                 <ul style="text-align: left;">
-                    <li>Create a User</li>
-                    <li>Retrieve a Profile</li>
-                    <li>Delete a User</li>
-                    <li>Change a User's Password</li>
-                    <li>Authenticate a User</li>
+                    <li>Create a new track</li>
+                    <li>Retrieve a track</li>
+                    <li>Edit a track</li>
+                    <li>Delete a track</li>
+                </ul>
+            </div>
+            <div id="scriptsDiv" style="display:none;">
+                How to use the shell scripts:
+                <ul style="text-align: left;">
+                    <li style="margin-top: 15px;">To perform a series of POST requests using a shell script to populate our API with users, run: <span style="background: #ddd; padding: 5px; font-size: 16px; font-family: monospace;">make addusers</span></li>
+                    <li style="margin-top: 15px;">To add tracks to our API using a shell script , run: <span style="background: #ddd; padding: 5px; font-size: 16px; font-family: monospace;">make addtracks</span></li>
+                    <li style="margin-top: 15px;">To populate all of our API endpoints , run: <span style="background: #ddd; padding: 5px; font-size: 16px; font-family: monospace;">make seedapi</span></li>
+                    <li style="margin-top: 15px;">To DELETE a user, run: <span style="background: #ddd; padding: 5px; font-size: 16px; font-family: monospace;">chmod +x deleteuser.sh | ./deleteuser.sh lovelace123</span></li>
                 </ul>
             </div>
             <div id="userDiv" style="display:none;">
@@ -40,36 +69,37 @@
             <div id="descripDiv" style="display:none">
                 Description Microservices:
                 <ul style="text-align: left;">
-                    <li>Create a User</li>
-                    <li>Retrieve a Profile</li>
-                    <li>Delete a User</li>
-                    <li>Change a User's Password</li>
-                    <li>Authenticate a User</li>
+                    <li>Set a user's description of a track</li>
+                    <li>Retrieve a user's description of a track</li>
                 </ul>
             </div>
             <div id="playlistDiv" style="display:none">
                 Playlist Microservices:
                 <ul style="text-align: left;">
-                    <li>Create a User</li>
-                    <li>Retrieve a Profile</li>
-                    <li>Delete a User</li>
-                    <li>Change a User's Password</li>
-                    <li>Authenticate a User</li>
+                    <li>Create a new playlist</li>
+                    <li>Retrieve a playlist</li>
+                    <li>Delete a playlist</li>
+                    <li>List all playlists</li>
+                    <li>Lists playlists created by a particular user</li>
                 </ul>
             </div>
         </div>
         <script>
             let onBut = document.getElementById("track");
+            let sBut = document.getElementById("scripts");
             let tBut = document.getElementById("track");
             let uBut = document.getElementById("user");
             let dBut = document.getElementById("descrip");
             let pBut = document.getElementById("playlist");
 
             let onDiv = document.getElementById("trackDiv");
+            let sDiv = document.getElementById("scriptsDiv");
             let tDiv = document.getElementById("trackDiv");
             let uDiv = document.getElementById("userDiv");
             let dDiv = document.getElementById("descripDiv");
             let pDiv = document.getElementById("playlistDiv");
+
+            sBut.onclick = () => { changeView(sBut, sDiv); }
 
             tBut.onclick = () => { changeView(tBut, tDiv); }
 

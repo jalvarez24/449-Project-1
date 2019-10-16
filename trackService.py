@@ -128,7 +128,7 @@ def create_track():
     g.db.execute("INSERT INTO Track VALUES(NULL, ?, ?, ?, ?, ?, ?)", params) # This is what worked
     #c.execute("SELECT * FROM Track ORDER BY track_id DESC LIMIT 1")
 
-    location = 'http://127.0.0.1:5000/api/v1/resources/musicService/tracks?track_title='+track_title
+    location = 'http://127.0.0.1:5001/api/v1/resources/musicService/tracks?track_title='+track_title
 	#create response to return
     response = make_response(jsonify('New Track Created!'), 201)
     response.headers['Location'] = location

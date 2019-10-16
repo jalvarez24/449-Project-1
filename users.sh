@@ -4,8 +4,8 @@ names=("kenytt" "bjorne" "ada")
 emails=("avery@mail.com" "c++@mail.com" "programmerOG@mail.com")
 len=${#users[@]}
 
+
 for (( i = 0; i<$len; i++ )); do \
-  #echo ${users[i]}
   curl -X POST \
   -H "Content-Type: application/json" \
   --data '{"username":"'"${users[i]}"'","password":"'"${passwords[i]}"'","display_name":"'"${names[i]}"'","email":"'" ${emails[i]} "'"}' \
