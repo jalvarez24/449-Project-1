@@ -43,10 +43,47 @@
             <div id="trackDiv" style="display:none;">
                 Track Microservices:
                 <ul style="text-align: left;">
-                    <li>Create a new track</li>
-                    <li>Retrieve a track</li>
-                    <li>Edit a track</li>
-                    <li>Delete a track</li>
+                    <li><b>Create</b> a new track, send a POST request in JSON format to: </br><i>http://127.0.0.1:5001/api/v1/resources/musicService/tracks</li>
+                        </br>JSON must have these fields:
+                        <ul>
+                            <li>track_title</li>
+                            <li>album_title</li>
+                            <li>artist</li>
+                            <li>length_seconds</li>
+                            <li>url_media</li>
+                            <li>url_art<i>(Optional)</i></li>
+                        </ul>
+                        </br> <b>Example of a POST curl command: <p></b>curl -v -d '{"track_title" : "MYSONG", "album_title": "MYALBUM", "artist" : "BestArtist", "length_seconds" : "201", "url_media" : "wwww.soundcloud.com/thisSong", "url_art" : "wwww.flickr.com/thisImage"}' -H "Content-Type: application/json" -X POST http://127.0.0.1:5001/api/v1/resources/musicService/tracks </p> </br>
+
+                    <li><b>Retrieve</b> a track, go to URL: </br><i>http://127.0.0.1:5001/api/v1/resources/musicService/tracks?track_title=<b>track_title</b></i>
+                        
+                        </br></br>Replace <b>track_title</b> at end of URL with title of track you'd like to retrieve.</li>
+                        <ul>
+                            <li>If track_title is not known retrieve <b>all</b> tracks by going to URL:</li>
+                            http://127.0.0.1:5001/api/v1/resources/musicService/tracks/all
+                        </ul></br></br>
+                        
+                    <li><b>Edit</b> a track, send a PUT request in JSON format to: </br><i>http://127.0.0.1:5001/api/v1/resources/musicService/tracks/edit-track</li>
+                    </br>JSON must have these fields:
+                        <ul>
+                            <li>track_title</li>
+                            <li>artist</li>
+                            <li>newTrackTitle</li>
+                            <li>newAlbumTitle</li>
+                            <li>newArtist</li>
+                            <li>newLength</li>
+                            <li>newUrlMedia</li>
+                            <li>newUrlArt</li>
+                        </ul>
+                    </br> <b>Example of a PUT curl command: <p></b>curl -v -d '{"track_title" : "Stan", "artist": "Eminem" , "newTrackTitle" : "NEWSONG", "newAlbumTitle": "NEWESTALBUM", "newArtist" : "NEWBestArtist", "newLength" : "180", "newUrlMedia" : "wwww.soundcloud.com/thisSong", "newUrlArt" : "wwww.flickr.com/thisImage"}' -H "Content-Type: application/json" -X PUT http://127.0.0.1:5001/api/v1/resources/musicService/tracks/edit-track </p> </br>
+                    
+                    <li><b>Delete</b> a track, send a DELETE request in JSON format to: </br> http://127.0.0.1:5001/api/v1/resources/musicService/tracks</li>
+                    </br>JSON must have these fields:
+                        <ul>
+                            <li>track_title</li>
+                            <li>artist</li>
+                        </ul>
+                    </br> <b>Example of a DELETE curl command: <p></b>curl -v -d '{"track_title" : "Sunflower", "artist": "Post Malone"}' -H "Content-Type: application/json" -X DELETE http://127.0.0.1:5001/api/v1/resources/musicService/tracks</p> </br>
                 </ul>
             </div>
             <div id="userDiv" style="display:none;">
@@ -115,14 +152,41 @@
                     </li>
                 </ul>
             </div>
+
+
             <div id="playlistDiv" style="display:none">
                 Playlist Microservices:
                 <ul style="text-align: left;">
-                    <li>Create a new playlist</li>
-                    <li>Retrieve a playlist</li>
-                    <li>Delete a playlist</li>
-                    <li>List all playlists</li>
+                    <li><b>Create</b> a new playlist, send a POST request in JSON format to: </br><i>http://127.0.0.1:5003/api/v1/resources/musicService/playlists</li>
+                    </br>JSON must have these fields:
+                        <ul>
+                            <li>playlist_title</li>
+                            <li>description</li>
+                            <li>username_id</li>
+                        </ul>
+                    </br> <b>Example of a POST curl command: <p></b>curl -v -d '{"playlist_title" : "The Feels Train", "description" : "Curl up and cry.", "username_id" : "ian123"}' -H "Content-Type: application/json" -X POST http://127.0.0.1:5003/api/v1/resources/musicService/playlists</p> </br>
+
+            
+                    <li><b>Retrieve</b> a playlist, go to URL: </br><i>http://127.0.0.1:5003/api/v1/resources/musicService/playlists?playlist_title=<b>playlist_title</b></i>
+                        
+                        </br></br>Replace <b>playlist_title</b> at end of URL with title of playlist you'd like to retrieve.</li>
+                        <ul>
+                            <li>If playlist_title is not known retrieve <b>all</b> playlists by going to URL:</li>
+                            http://127.0.0.1:5003/api/v1/resources/musicService/playlists/all
+                        </ul></br></br>
+                    
+                     <li><b>Delete</b> a playlist, send a DELETE request in JSON format to: </br> http://127.0.0.1:5003/api/v1/resources/musicService/playlists</li>
+                    </br>JSON must have these fields:
+                        <ul>
+                            <li>playlist_title</li>
+                        </ul>
+                    </br> <b>Example of a DELETE curl command: <p></b>curl -v -d '{"playlist_title": "The Feels Train"}' -H "Content-Type: application/json" -X DELETE http://127.0.0.1:5003/api/v1/resources/musicService/playlists</p> </br>
+
+                    <li>List <b>all</b> playlists, go to URL: </li>
+                    http://127.0.0.1:5003/api/v1/resources/musicService/playlists/all</br></br>
+
                     <li>Lists playlists created by a particular user</li>
+                    http://127.0.0.1:5003/api/v1/resources/musicService/playlists/user?username_id=ian123</br></br>
                 </ul>
             </div>
         </div>

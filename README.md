@@ -57,7 +57,7 @@
 1. Be in the right project directory that has your .py, .sql, .db files
 2. Enter a **DELETE** curl command:
 - **NOTE: Be sure to *provide* all of the *key* values shown below. The order of the way this is inputed MATTERS.**
-- "track_id"
+- "track_title"
 
 **Example of a curl command to DELETE a track:**
 - >curl -v -d '{"track_title" : "Sunflower", "artist": "Post Malone"}' -H "Content-Type: application/json" -X DELETE http://127.0.0.1:5001/api/v1/resources/musicService/tracks
@@ -105,7 +105,7 @@
 
 ### How to list *ALL* playlists in the microservice
 1. While Flask is running go to:
-- >http://127.0.0.1:5000/api/v1/resources/musicService/playlists/all
+- >http://127.0.0.1:5003/api/v1/resources/musicService/playlists/all
 
 
 
