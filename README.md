@@ -9,7 +9,7 @@
 2. Run command: `make init`. This will:
 	- Run `flask init` and set up the database schema
 	- Run `foreman start` to spin up the four microservices
-3. The servers is now running! Go to http://127.0.0.1:5000/ to see full user manual
+3. The servers are now running! Go to http://127.0.0.1:5000/ to see full user manual
 
 
 
@@ -17,11 +17,11 @@
 
 
 
-# Things being used:
+# Tech being used:
 - Curl
 - Flask
 - Sqlite3
-- json
+- JSON
 
 # Tracks Microservice:
 ### To *CREATE* a track
@@ -174,23 +174,6 @@ Descriptions Table:
 
 # Operations
 
-### How to run Procfile
-To easily spin up all four microservices, we employ a Procfile.
-In the terminal, navigate to the directory containing the Procfile and run:
+### Check the home route http://127.0.0.1:5000/ to view the full user manual and how-to guide
 
-`foreman start`
 
-### How to add Users via shellscript
-Steps:
-1. Shell script files must be explicitly given execute permission before they can be run.
-To do so, run the following command.
-Assume the file name is users.sh.
-
-*Note: permission only needs to be given once per file, then each file that has been given permission can be run as many times as needed.*
-
-`chmod +x users.sh`
-
-2. To add new users to our REST api, we will use a pre-filled shell script.  
-To add the users, run the following command:
-
-`./users.sh`
