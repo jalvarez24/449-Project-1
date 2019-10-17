@@ -4,5 +4,5 @@ init :
 	foreman start
 
 seedapi :
-		chmod +x seedapi.sh
-		./seedapi.sh
+	chmod +x seedapi.sh
+	./seedapi.sh
