@@ -9,10 +9,21 @@ import sqlite3
 app = flask.Flask(__name__)
 app.config.from_envvar('APP_CONFIG')
 
+track_shard_db_names = ['TRACKS_SHARD1','TRACKS_SHARD2','TRACKS_SHARD3']
+db_context_names = ['_trackshard1', '_trackshard2', '_trackshard3', '_database']
+
 @app.cli.command('init')
 def init_db():
     with app.app_context():
-        db = get_db()
+
+        # need to init 3 track shards before running the user/descriptions/playlists
+        for shard in track_shard_db_names:
+            db = get_db(shard)
+            with app.open_resource('trackService.sql', mode='r') as f:
+                db.cursor().executescript(f.read())
+            db.commit()
+
+        db = get_db('user_desc_playlist')
         with app.open_resource('musicService.sql', mode='r') as f:
             db.cursor().executescript(f.read())
         db.commit()
@@ -23,16 +34,35 @@ def make_dicts(cursor, row):
                 for idx, value in enumerate(row))
 
 
-def get_db():
-    db = getattr(g, '_database', None)
-    if db is None:
-        db = g._database = sqlite3.connect(app.config['DATABASE'])
-        db.row_factory = make_dicts
+def get_db(db_name):
+
+    if db_name == track_shard_db_names[0]:
+        db = getattr(g, db_context_names[0], None)
+        if db is None:
+            db = g._trackshard1 = sqlite3.connect(app.config[db_name])
+            db.row_factory = make_dicts
+    elif db_name == track_shard_db_names[1]:
+        db = getattr(g, db_context_names[1], None)
+        if db is None:
+            db = g._trackshard2 = sqlite3.connect(app.config[db_name])
+            db.row_factory = make_dicts
+    elif db_name == track_shard_db_names[2]:
+        db = getattr(g, db_context_names[2], None)
+        if db is None:
+            db = g._trackshard3 = sqlite3.connect(app.config[db_name])
+            db.row_factory = make_dicts
+    else:
+        db = getattr(g, db_context_names[3], None)
+        if db is None:
+            db = g._database = sqlite3.connect(app.config['DATABASE'])
+            db.row_factory = make_dicts
+
     return db
 
 
 @app.teardown_appcontext
 def close_connection(exception):
-    db = getattr(g, '_database', None)
-    if db is not None:
-        db.close()
+    for dbname in db_context_names:
+        db = getattr(g, dbname, None)
+        if db is not None:
+            db.close()

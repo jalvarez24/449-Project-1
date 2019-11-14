@@ -1,48 +1,73 @@
 # Music Microservices APIs
 # Ian Michael Jesu Alvarez
+# Brendan Albert
 # CPSC 449- Backend Engineering
 
 import flask
 import json
+import uuid
 from flask import request, jsonify, g, make_response, render_template
 import sqlite3
 
 app = flask.Flask(__name__)
 app.config.from_envvar('APP_CONFIG')
 
+track_shard_db_names = ['TRACKS_SHARD1','TRACKS_SHARD2','TRACKS_SHARD3']
+db_context_names = ['_trackshard1', '_trackshard2', '_trackshard3', '_database']
+
 
 #called right before any request to establish db connection
 #connection saved globally in 'g'
 @app.before_request
 def connect_to_db():
-    g.db = get_db()
-
-
-def query_db(query, args=(), one=False):
-    cur = g.db.execute(query, args)
-    rv = cur.fetchall()
-    return (rv[0] if rv else None) if one else rv
-
+    g._trackshard1 = get_db(track_shard_db_names[0])
+    g._trackshard2 = get_db(track_shard_db_names[1])
+    g._trackshard3 = get_db(track_shard_db_names[2])
+    g.db = get_db('users_playlists_descriptions')
 
 def make_dicts(cursor, row):
     return dict((cursor.description[idx][0], value) for idx, value in enumerate(row))
 
 
-def get_db():
-    db = getattr(g, '_database', None)
-    if db is None:
-        db = g._database = sqlite3.connect(app.config['DATABASE'])
-        db.execute('PRAGMA foreign_keys = ON')
-        db.row_factory = make_dicts
+def get_db(db_name):
+    # db = getattr(g, '_database', None)
+    # if db is None:
+    #     db = g._database = sqlite3.connect(app.config['DATABASE'])
+    #     db.execute('PRAGMA foreign_keys = ON')
+    #     db.row_factory = make_dicts
+    # return db
+
+
+    if db_name == track_shard_db_names[0]:
+        db = getattr(g, db_context_names[0], None)
+        if db is None:
+            db = g._trackshard1 = sqlite3.connect(app.config[db_name])
+            db.row_factory = make_dicts
+    elif db_name == track_shard_db_names[1]:
+        db = getattr(g, db_context_names[1], None)
+        if db is None:
+            db = g._trackshard2 = sqlite3.connect(app.config[db_name])
+            db.row_factory = make_dicts
+    elif db_name == track_shard_db_names[2]:
+        db = getattr(g, db_context_names[2], None)
+        if db is None:
+            db = g._trackshard3 = sqlite3.connect(app.config[db_name])
+            db.row_factory = make_dicts
+    elif db_name == 'users_playlists_descriptions':
+        db = getattr(g, db_context_names[3], None)
+        if db is None:
+            db = g._database = sqlite3.connect(app.config['DATABASE'])
+            db.execute('PRAGMA foreign_keys = ON')
+            db.row_factory = make_dicts
     return db
 
 
 @app.teardown_appcontext
 def close_connection(exception):
-    db = getattr(g, '_database', None)
-    if db is not None:
-        db.commit()
-        db.close()
+    for dbname in db_context_names:
+        db = getattr(g, dbname, None)
+        if db is not None:
+            db.close()
 
 
 @app.errorhandler(404)
@@ -71,8 +96,21 @@ def home():
 def track_all():
 
     query = "SELECT * FROM Track"
-    result = g.db.execute(query)
+    result = g._trackshard1.execute(query)
     found = result.fetchall()
+
+    result = g._trackshard2.execute(query)
+    found += result.fetchall()
+
+    result = g._trackshard3.execute(query)
+    found += result.fetchall()
+
+    file = open('textfile.txt', 'a')
+    file.write('contents of found' + str(found) + '\n')
+
+    file.close()
+
+
 
     return make_response(jsonify(found))
 
@@ -89,13 +127,27 @@ def api_filter():
 
     query = "SELECT * FROM Track WHERE track_title = \"" +track_title + "\";"
 
-    result = g.db.execute(query)
+    # we will need to check all 3 database shards
+    shard1_result = g._trackshard1.execute(query)
+    found1 = shard1_result.fetchone()
 
-    found = result.fetchone()
+    shard2_result = g._trackshard2.execute(query)
+    found2 = shard2_result.fetchone()
 
-    if not found:
+    shard3_result = g._trackshard3.execute(query)
+    found3 = shard3_result.fetchone()
+
+    if not found1 and not found2 and not found3:
         return page_not_found(404)
 
+    found = None
+
+    if found1:
+        found = found1
+    elif found2:
+        found = found2
+    elif found3:
+        found = found3
 
     return make_response(jsonify(found))
 
@@ -123,16 +175,38 @@ def create_track():
         url_art = input['url_art']
 
     query = "SELECT * FROM Track WHERE track_title = \"" + track_title + ", artist = " + artist + "\";"
-    result = g.db.execute(query)
+    result = g._trackshard1.execute(query)
 
     found = result.fetchone()
 
     if found:
         return constraint_violation(409)
 
-    params = (track_title, album_title, artist, length_seconds, url_media, url_art)
-    g.db.execute("INSERT INTO Track VALUES(NULL, ?, ?, ?, ?, ?, ?)", params) # This is what worked
-    #c.execute("SELECT * FROM Track ORDER BY track_id DESC LIMIT 1")
+
+    track_id = str(uuid.uuid4())
+    first_char_of_track_id = ord(track_id[0])
+    shard = first_char_of_track_id % 3
+
+    params = (track_id, track_title, album_title, artist, length_seconds, url_media, url_art)
+
+    try:
+
+        if shard == 0:
+            g._trackshard1.execute("INSERT INTO Track VALUES(?, ?, ?, ?, ?, ?, ?)", params) # This is what worked
+            g._trackshard1.commit()
+            
+        if shard == 1:
+            g._trackshard2.execute("INSERT INTO Track VALUES(?, ?, ?, ?, ?, ?, ?)", params) # This is what worked
+            g._trackshard2.commit()
+            
+        if shard == 2:
+            g._trackshard3.execute("INSERT INTO Track VALUES(?, ?, ?, ?, ?, ?, ?)", params) # This is what worked
+            g._trackshard3.commit()
+
+    except:
+        file = open('errorlog.txt', 'a')
+        file.write('someting went wrong while adding track' + '\n')
+        file.close()
 
     location = 'http://127.0.0.1:5001/api/v1/resources/musicService/tracks?track_title='+track_title
     #create response to return
@@ -153,11 +227,26 @@ def delete_track():
 
     # Get track_id where the track_title = to the track_title in the input
     query_for_track_id = "SELECT track_id FROM Track WHERE track_title = \"" + track_title + "\" AND artist = \"" + artist+  "\";"
-    result = g.db.execute(query_for_track_id)
-    found = result.fetchone() # this now holds the track_id to be checked on the Tracks_List table
+    result1 = g._trackshard1.execute(query_for_track_id)
+    found1 = result1.fetchone() # this now holds the track_id to be checked on the Tracks_List table
+    
+    result2 = g._trackshard2.execute(query_for_track_id)
+    found2 = result2.fetchone() # this now holds the track_id to be checked on the Tracks_List table
 
-    if not found:
+    result3 = g._trackshard3.execute(query_for_track_id)
+    found3 = result3.fetchone() # this now holds the track_id to be checked on the Tracks_List table
+
+    if not found1 and not found2 and not found3:
         return page_not_found(404)
+
+    found = None
+
+    if found1:
+        found = found1
+    elif found2:
+        found = found2
+    elif found3:
+        found = found3
 
     # search if the track_id of this track_title exist in Track_List if it does delete the rows that has this track_id first Track_List table THEN delete the track from the Track table
     query_for_TrackList = "SELECT track_id FROM Tracks_List WHERE track_id = " + str(found['track_id']) + ";"
@@ -192,7 +281,16 @@ def delete_track():
         '''
     delete_user_query = "DELETE FROM Track WHERE track_title= \"" + track_title + "\" AND artist = \"" + artist+  "\";"
     #setting up response data
-    g.db.execute(delete_user_query)
+
+    # we need to know which Tracks db shard to delete from
+    # first_char_of_track_id = ord(track_id[0])
+    # shard = first_char_of_track_id % 3
+    if found1:
+        g._trackshard1.execute(delete_user_query)
+    elif found2:
+        g._trackshard2.execute(delete_user_query)
+    elif found3:
+        g._trackshard3.execute(delete_user_query)
 
 
 

@@ -109,3 +109,7 @@ venv.bak/
 books.db
 
 .vscode
+
+musicService2.sql
+tracks*.db
+.DS_Store

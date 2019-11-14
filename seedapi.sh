@@ -29,19 +29,19 @@ len=${#track_titles[@]}
 #
 
 
-users=("avery123" "stroustrup123" "lovelace123")
-passwords=("password123" "goodpass" "badpass")
-names=("kenytt" "bjorne" "ada")
-emails=("avery@mail.com" "c++@mail.com" "programmerOG@mail.com")
-len=${#users[@]}
+# users=("avery123" "stroustrup123" "lovelace123")
+# passwords=("password123" "goodpass" "badpass")
+# names=("kenytt" "bjorne" "ada")
+# emails=("avery@mail.com" "c++@mail.com" "programmerOG@mail.com")
+# len=${#users[@]}
 
 
- for (( i = 0; i<$len; i++ )); do
-   curl -X POST \
-   -H "Content-Type: application/json" \
-   --data '{"username":"'"${users[i]}"'","password":"'"${passwords[i]}"'","display_name":"'"${names[i]}"'","email":"'" ${emails[i]} "'"}' \
-   http://127.0.0.1:5000/api/v1/resources/musicService/users
- done
+#  for (( i = 0; i<$len; i++ )); do
+#    curl -X POST \
+#    -H "Content-Type: application/json" \
+#    --data '{"username":"'"${users[i]}"'","password":"'"${passwords[i]}"'","display_name":"'"${names[i]}"'","email":"'" ${emails[i]} "'"}' \
+#    http://127.0.0.1:5000/api/v1/resources/musicService/users
+#  done
 
 
 
@@ -50,8 +50,8 @@ len=${#users[@]}
 #
 
 
-curl -d '{"username" : "lovelace123", "track_id" : "1", "description_text" : "This song cured my depression."}' -H "Content-Type: application/json" -X POST http://127.0.0.1:5002/api/v1/resources/musicService/descriptions
-curl -d '{"username" : "lovelace123", "track_id" : "3", "description_text" : "You get a sunflower, and YOU get a sunflower!"}' -H "Content-Type: application/json" -X POST http://127.0.0.1:5002/api/v1/resources/musicService/descriptions
+# curl -d '{"username" : "lovelace123", "track_id" : "1", "description_text" : "This song cured my depression."}' -H "Content-Type: application/json" -X POST http://127.0.0.1:5002/api/v1/resources/musicService/descriptions
+# curl -d '{"username" : "lovelace123", "track_id" : "3", "description_text" : "You get a sunflower, and YOU get a sunflower!"}' -H "Content-Type: application/json" -X POST http://127.0.0.1:5002/api/v1/resources/musicService/descriptions
 
 
 
@@ -60,5 +60,5 @@ curl -d '{"username" : "lovelace123", "track_id" : "3", "description_text" : "Yo
 #
 
 
-curl -v -d '{"playlist_title" : "The Feels Train", "description" : "Curl up and cry.", "username_id" : "ian123"}' -H "Content-Type: application/json" -X POST http://127.0.0.1:5003/api/v1/resources/musicService/playlists
-curl -v -d '{"playlist_title" : "Tunes to Program to", "description" : "We hackin now boiz.  Im in.", "username_id" : "brendan123"}' -H "Content-Type: application/json" -X POST http://127.0.0.1:5003/api/v1/resources/musicService/playlists
+# curl -v -d '{"playlist_title" : "The Feels Train", "description" : "Curl up and cry.", "username_id" : "ian123"}' -H "Content-Type: application/json" -X POST http://127.0.0.1:5003/api/v1/resources/musicService/playlists
+# curl -v -d '{"playlist_title" : "Tunes to Program to", "description" : "We hackin now boiz.  Im in.", "username_id" : "brendan123"}' -H "Content-Type: application/json" -X POST http://127.0.0.1:5003/api/v1/resources/musicService/playlists
