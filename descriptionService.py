@@ -83,13 +83,23 @@ def set_user_description():
     username = input['username']
     track_id = input['track_id']
     description_text = input['description_text']
+
+    with open('description_log.txt', 'a') as f:
+        f.write('username = ' + username + '\n')
+        f.write('track_id = ' + track_id + '\n')
+        f.write('description_text = ' + description_text + '\n')
     
     params = (username, track_id, description_text)
 
     #be ready to catch foreign key constraint
     try: 
         g.db.execute("INSERT INTO Description VALUES(?,?,?)", params)
+        g.db.commit()
+        with open('description_log.txt', 'a') as f:
+            f.write('inserted into description with great success\n')
     except:
+        with open('description_log.txt', 'a') as f:
+            f.write('FAILED TO insert into description\n')
         return constraint_violation(409)
 
     #set up location to be returned in response header
@@ -122,18 +132,18 @@ def get_user_description():
     #return first row from query, returns None of nothing found
     found = result.fetchone()
 
-    #If no user is found
+    #If no *description* is found
     if not found:
         return page_not_found(404)
 
     #get song referred to
-    params = (track_id)
-    song = g.db.execute("SELECT * FROM Track WHERE track_id = ?", params).fetchone()
+    # params = (track_id)
+    # song = g.db.execute("SELECT * FROM Track WHERE track_id = ?", params).fetchone()
 
     #add song to found 
-    found['song'] = song
+    # found['song'] = song
 
-    #put the user profile in the response, default return is 200
+    #put the *description* in the response, default return is 200
     return make_response(jsonify(found))
 
 #

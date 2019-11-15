@@ -15,6 +15,7 @@ app.config.from_envvar('APP_CONFIG')
 track_shard_db_names = ['TRACKS_SHARD1','TRACKS_SHARD2','TRACKS_SHARD3']
 db_context_names = ['_trackshard1', '_trackshard2', '_trackshard3', '_database']
 
+sqlite3.register_converter('GUID', lambda b: uuid.UUID(bytes_le=b))
 
 #called right before any request to establish db connection
 #connection saved globally in 'g'
@@ -30,33 +31,25 @@ def make_dicts(cursor, row):
 
 
 def get_db(db_name):
-    # db = getattr(g, '_database', None)
-    # if db is None:
-    #     db = g._database = sqlite3.connect(app.config['DATABASE'])
-    #     db.execute('PRAGMA foreign_keys = ON')
-    #     db.row_factory = make_dicts
-    # return db
-
-
     if db_name == track_shard_db_names[0]:
         db = getattr(g, db_context_names[0], None)
         if db is None:
-            db = g._trackshard1 = sqlite3.connect(app.config[db_name])
+            db = g._trackshard1 = sqlite3.connect(app.config[db_name], detect_types=sqlite3.PARSE_DECLTYPES)
             db.row_factory = make_dicts
     elif db_name == track_shard_db_names[1]:
         db = getattr(g, db_context_names[1], None)
         if db is None:
-            db = g._trackshard2 = sqlite3.connect(app.config[db_name])
+            db = g._trackshard2 = sqlite3.connect(app.config[db_name], detect_types=sqlite3.PARSE_DECLTYPES)
             db.row_factory = make_dicts
     elif db_name == track_shard_db_names[2]:
         db = getattr(g, db_context_names[2], None)
         if db is None:
-            db = g._trackshard3 = sqlite3.connect(app.config[db_name])
+            db = g._trackshard3 = sqlite3.connect(app.config[db_name], detect_types=sqlite3.PARSE_DECLTYPES)
             db.row_factory = make_dicts
     elif db_name == 'users_playlists_descriptions':
         db = getattr(g, db_context_names[3], None)
         if db is None:
-            db = g._database = sqlite3.connect(app.config['DATABASE'])
+            db = g._database = sqlite3.connect(app.config['DATABASE'], detect_types=sqlite3.PARSE_DECLTYPES)
             db.execute('PRAGMA foreign_keys = ON')
             db.row_factory = make_dicts
     return db
@@ -104,13 +97,6 @@ def track_all():
 
     result = g._trackshard3.execute(query)
     found += result.fetchall()
-
-    file = open('textfile.txt', 'a')
-    file.write('contents of found' + str(found) + '\n')
-
-    file.close()
-
-
 
     return make_response(jsonify(found))
 
@@ -174,38 +160,47 @@ def create_track():
     if 'url_art' in input:
         url_art = input['url_art']
 
-    query = "SELECT * FROM Track WHERE track_title = \"" + track_title + ", artist = " + artist + "\";"
-    result = g._trackshard1.execute(query)
-
+    result = g._trackshard1.execute("""SELECT * FROM Track WHERE track_title = ? and artist = ?;""", (track_title,artist,))
     found = result.fetchone()
 
-    if found:
+    result = g._trackshard2.execute("""SELECT * FROM Track WHERE track_title = ? and artist = ?;""", (track_title,artist,))
+    found2 = result.fetchone()
+
+    result = g._trackshard3.execute("""SELECT * FROM Track WHERE track_title = ? and artist = ?;""", (track_title,artist,))
+    found3 = result.fetchone()
+
+    if found or found2 or found3:
         return constraint_violation(409)
 
 
-    track_id = str(uuid.uuid4())
-    first_char_of_track_id = ord(track_id[0])
-    shard = first_char_of_track_id % 3
+    track_id = uuid.uuid4()
+    # first_char_of_track_id = ord(track_id[0])
+    shard = track_id.int % 3
+    file = open('textfile.txt', 'a')
+    file.write('shard # [')
+    file.write(str(shard))
+    file.write(']\n')
+    file.close()
 
-    params = (track_id, track_title, album_title, artist, length_seconds, url_media, url_art)
+    params = (track_id.bytes_le, track_title, album_title, artist, length_seconds, url_media, url_art)
 
     try:
 
         if shard == 0:
-            g._trackshard1.execute("INSERT INTO Track VALUES(?, ?, ?, ?, ?, ?, ?)", params) # This is what worked
+            g._trackshard1.execute("INSERT INTO Track VALUES(?, ?, ?, ?, ?, ?, ?)", params)
             g._trackshard1.commit()
             
-        if shard == 1:
-            g._trackshard2.execute("INSERT INTO Track VALUES(?, ?, ?, ?, ?, ?, ?)", params) # This is what worked
+        elif shard == 1:
+            g._trackshard2.execute("INSERT INTO Track VALUES(?, ?, ?, ?, ?, ?, ?)", params)
             g._trackshard2.commit()
             
-        if shard == 2:
-            g._trackshard3.execute("INSERT INTO Track VALUES(?, ?, ?, ?, ?, ?, ?)", params) # This is what worked
+        elif shard == 2:
+            g._trackshard3.execute("INSERT INTO Track VALUES(?, ?, ?, ?, ?, ?, ?)", params)
             g._trackshard3.commit()
 
     except:
         file = open('errorlog.txt', 'a')
-        file.write('someting went wrong while adding track' + '\n')
+        file.write('something went wrong while adding track' + '\n')
         file.close()
 
     location = 'http://127.0.0.1:5001/api/v1/resources/musicService/tracks?track_title='+track_title
@@ -249,57 +244,64 @@ def delete_track():
         found = found3
 
     # search if the track_id of this track_title exist in Track_List if it does delete the rows that has this track_id first Track_List table THEN delete the track from the Track table
-    query_for_TrackList = "SELECT track_id FROM Tracks_List WHERE track_id = " + str(found['track_id']) + ";"
-    result = g.db.execute(query_for_TrackList)
+
+    file = open('deleted.txt', 'a')
+    file.write("str(found['track_id'])")
+    file.write(str(found['track_id']))
+    file.write("\n")
+    file.close()
+    # query_for_TrackList = "SELECT track_id FROM Tracks_List WHERE track_id = " + str(found['track_id']) + ";"
+    result = g.db.execute("""SELECT track_id FROM Tracks_List WHERE track_id = ?;""", ( str(found['track_id']), ) )
     found_inTrackList = result.fetchone()
 
     # Delete the rows that has this track_id from Tracks_List
     if found_inTrackList:
-        delete_from_TrackList = "DELETE FROM Tracks_List WHERE track_id= " + str(found['track_id']) +  ";"
-        g.db.execute(delete_from_TrackList)
+        g.db.execute("""DELETE FROM Tracks_List WHERE track_id = ?;""" , (str(found['track_id']),))
+        # delete_from_TrackList = "DELETE FROM Tracks_List WHERE track_id= " + str(found['track_id']) +  ";"
 
 
     # Delete row from Description table
-    query_for_Description = "SELECT track_id FROM Description WHERE track_id = " + str(found['track_id']) +  ";"
-    result = g.db.execute(query_for_Description)
-    found_inDescription = result.fetchone()
+    # query_for_Description = "SELECT track_id FROM Description WHERE track_id = " + str(found['track_id']) +  ";"
+    # result = g.db.execute(query_for_Description)
+    # found_inDescription = result.fetchone()
 
-    if found_inDescription:
-        delete_from_Description = "DELETE FROM Description WHERE track_id= " + str(found['track_id']) +  ";"
-        g.db.execute(delete_from_Description)
-
-
-
-    '''
-    # Now that this track being deleted is not in Tracks_List anymore we could finally delete it from the Track Table
-    query = "SELECT track_title FROM Track WHERE track_title = \"" + track_title + "\" AND artist = \"" + artist+  "\";"
-    result = g.db.execute(query)
-    found = result.fetchone()
+    # if found_inDescription:
+    #     delete_from_Description = "DELETE FROM Description WHERE track_id= " + str(found['track_id']) +  ";"
+    #     g.db.execute(delete_from_Description)
 
 
-    if found:
-        '''
-    delete_user_query = "DELETE FROM Track WHERE track_title= \"" + track_title + "\" AND artist = \"" + artist+  "\";"
+    # delete_user_query = "DELETE FROM Track WHERE track_title= \"" + track_title + "\" AND artist = \"" + artist+  "\";"
     #setting up response data
 
     # we need to know which Tracks db shard to delete from
     # first_char_of_track_id = ord(track_id[0])
     # shard = first_char_of_track_id % 3
     if found1:
-        g._trackshard1.execute(delete_user_query)
+        g._trackshard1.execute("""DELETE FROM Track WHERE track_title = ? AND artist = ? ;""", ( track_title , artist,))
+        g._trackshard1.commit()
+        file = open('deleted.txt', 'a')
+        file.write('deleted from shard 1')
+        file.close()
     elif found2:
-        g._trackshard2.execute(delete_user_query)
+        # g._trackshard2.execute(delete_user_query)
+        g._trackshard2.execute("""DELETE FROM Track WHERE track_title = ? AND artist = ? ;""", ( track_title , artist,))
+        g._trackshard2.commit()
+        file = open('deleted.txt', 'a')
+        file.write('deleted from shard 2')
+        file.close()
     elif found3:
-        g._trackshard3.execute(delete_user_query)
+        # g._trackshard3.execute(delete_user_query)
+        g._trackshard3.execute("""DELETE FROM Track WHERE track_title = ? AND artist = ? ;""", ( track_title , artist,))
+        g._trackshard3.commit()
+        file = open('deleted.txt', 'a')
+        file.write('deleted from shard 3')
+        file.close()
 
 
 
     #create response to return
     response = make_response(jsonify('Track deleted'), 200)
     return response
-
-    #if no user found
-    #return page_not_found(404)
 
 @app.route('/api/v1/resources/musicService/tracks/edit-track', methods=['PUT'])
 def edit_track():
@@ -318,30 +320,43 @@ def edit_track():
     newUrlMedia = input['newUrlMedia']
     newUrlArt = input['newUrlArt']
 
+    # we will need to check all 3 database shards
+    shard1_result = g._trackshard1.execute("""SELECT track_id FROM Track WHERE track_title = ? AND artist = ?;""", (track_title_toUpdate, artist_toUpdate,))
+    found1 = shard1_result.fetchone()
 
+    shard2_result = g._trackshard2.execute("""SELECT track_id FROM Track WHERE track_title = ? AND artist = ?;""", (track_title_toUpdate, artist_toUpdate,))
+    found2 = shard2_result.fetchone()
 
-    #check if track_id in database before deletion
-    # "SELECT track_title FROM Track WHERE track_title = Stan AND artist = Eminem "
-    query = "SELECT * FROM Track WHERE track_title = \"" + track_title_toUpdate + "\" AND artist = \"" + artist_toUpdate +"\";"
-    result = g.db.execute(query)
+    shard3_result = g._trackshard3.execute("""SELECT track_id FROM Track WHERE track_title = ? AND artist = ?;""", (track_title_toUpdate, artist_toUpdate,))
+    found3 = shard3_result.fetchone()
 
-    found = result.fetchone()
+    if not found1 and not found2 and not found3:
+        return page_not_found(404)
 
-    # edit the track with this id
-    # "UPDATE Track SET tite = "?", artist = "?", year = "?"" WHERE track_id = track_id; "
-    if found:
-        update_query = "UPDATE Track SET track_title = \""  + newTrackTitle  +"\", album_title = \""  + newAlbumTitle  + "\", artist = \"" + newArtist + "\", length_seconds = \"" + newLength +"\", url_media = \"" + newUrlMedia + "\", url_art = \""      + newUrlArt      +"\" WHERE track_title = \"" + track_title_toUpdate + "\" AND artist = \"" + artist_toUpdate +"\";"
-        g.db.execute(update_query)
-        #setting up response data
-        response = make_response(jsonify(track_title_toUpdate + '\'s information was changed!'))
+    if found1:
+        file = open('textfile.txt', 'a')
+        file.write('updating track in shard 1, id = ' + str(found1))
+        file.close()
+        g._trackshard1.execute("""UPDATE Track SET track_title = ?, 
+        album_title = ?, artist = ?, length_seconds = ?, url_media = ?, url_art = ? 
+        WHERE track_title = ? AND artist = ?;""", (newTrackTitle,newAlbumTitle,newArtist,newLength,newUrlMedia,newUrlArt,track_title_toUpdate,artist_toUpdate ))
+        g._trackshard1.commit()
+    elif found2:
+        file = open('textfile.txt', 'a')
+        file.write('updating track in shard 2, id = ' + str(found2))
+        file.close()
+        g._trackshard2.execute("""UPDATE Track SET track_title = ?, 
+        album_title = ?, artist = ?, length_seconds = ?, url_media = ?, url_art = ? 
+        WHERE track_title = ? AND artist = ?;""", (newTrackTitle,newAlbumTitle,newArtist,newLength,newUrlMedia,newUrlArt,track_title_toUpdate,artist_toUpdate ))
+        g._trackshard2.commit()
+    elif found3:
+        file = open('textfile.txt', 'a')
+        file.write('updating track in shard 3, id = ' + str(found3))
+        file.close()
+        g._trackshard3.execute("""UPDATE Track SET track_title = ?, 
+        album_title = ?, artist = ?, length_seconds = ?, url_media = ?, url_art = ? 
+        WHERE track_title = ? AND artist = ?;""", (newTrackTitle,newAlbumTitle,newArtist,newLength,newUrlMedia,newUrlArt,track_title_toUpdate,artist_toUpdate ))
+        g._trackshard3.commit()
 
-        #create response to return
-        return response
-
-    #if no user found
-    return page_not_found(404)
-
-
-# #
-# ############################## END OF TRACKS MICROSERVICE CODE ########################################
-# #
+    
+    return make_response(jsonify(track_title_toUpdate + '\'s information was changed!'))

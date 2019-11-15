@@ -111,5 +111,6 @@ books.db
 .vscode
 
 musicService2.sql
-tracks*.db
+*.db
+*.txt
 .DS_Store

@@ -5,12 +5,15 @@
 import flask
 from flask import g
 import sqlite3
+import uuid
 
 app = flask.Flask(__name__)
 app.config.from_envvar('APP_CONFIG')
 
 track_shard_db_names = ['TRACKS_SHARD1','TRACKS_SHARD2','TRACKS_SHARD3']
 db_context_names = ['_trackshard1', '_trackshard2', '_trackshard3', '_database']
+
+sqlite3.register_converter('GUID', lambda b: uuid.UUID(bytes_le=b))
 
 @app.cli.command('init')
 def init_db():
@@ -39,22 +42,22 @@ def get_db(db_name):
     if db_name == track_shard_db_names[0]:
         db = getattr(g, db_context_names[0], None)
         if db is None:
-            db = g._trackshard1 = sqlite3.connect(app.config[db_name])
+            db = g._trackshard1 = sqlite3.connect(app.config[db_name], detect_types=sqlite3.PARSE_DECLTYPES)
             db.row_factory = make_dicts
     elif db_name == track_shard_db_names[1]:
         db = getattr(g, db_context_names[1], None)
         if db is None:
-            db = g._trackshard2 = sqlite3.connect(app.config[db_name])
+            db = g._trackshard2 = sqlite3.connect(app.config[db_name], detect_types=sqlite3.PARSE_DECLTYPES)
             db.row_factory = make_dicts
     elif db_name == track_shard_db_names[2]:
         db = getattr(g, db_context_names[2], None)
         if db is None:
-            db = g._trackshard3 = sqlite3.connect(app.config[db_name])
+            db = g._trackshard3 = sqlite3.connect(app.config[db_name], detect_types=sqlite3.PARSE_DECLTYPES)
             db.row_factory = make_dicts
     else:
         db = getattr(g, db_context_names[3], None)
         if db is None:
-            db = g._database = sqlite3.connect(app.config['DATABASE'])
+            db = g._database = sqlite3.connect(app.config['DATABASE'], detect_types=sqlite3.PARSE_DECLTYPES)
             db.row_factory = make_dicts
 
     return db
