@@ -4,7 +4,7 @@
 
 import flask
 import json
-from flask import request, jsonify, g, make_response, render_template 
+from flask import request, jsonify, g, make_response, render_template
 import sqlite3
 
 
@@ -31,6 +31,11 @@ def get_db():
         db.row_factory = make_dicts
     return db
 
+def query_db(query, args=(), one=False):
+    cur = get_db().execute(query, args)
+    rv = cur.fetchall()
+    cur.close()
+    return (rv[0] if rv else None) if one else rv
 
 @app.teardown_appcontext
 def close_connection(exception):
@@ -88,8 +93,8 @@ def playlist_filter():
         return page_not_found(404)
 
     return make_response(jsonify(found))
-    
-    
+
+
 ### Create a new playlist
 @app.route('/api/v1/resources/musicService/playlists', methods=['POST'])
 def create_playlist():
@@ -109,7 +114,7 @@ def create_playlist():
     #check if optional data was sent in, if not, already set to None
     if 'description' in input:
         description = input['description']
-    
+
 
 
     # #if user doesn not exist, they can't create a playlist
@@ -120,7 +125,7 @@ def create_playlist():
     params = (playlist_title, description, username_id)
 
     try:
-        g.db.execute("INSERT INTO Playlist(playlist_title, description, username_id) VALUES(?, ?, ?)", params) 
+        g.db.execute("INSERT INTO Playlist(playlist_title, description, username_id) VALUES(?, ?, ?)", params)
     except:
         return constraint_violation(409)
 
@@ -138,19 +143,44 @@ def retrieve_playlist():
     query_parameters = request.args
 
     playlist_title = query_parameters.get('playlist_title')
+    playlist_id = query_parameters.get('playlist_id')
 
 
-    if playlist_title is None:
+    query = "SELECT * FROM Playlist WHERE"
+    to_filter = []
+
+    if playlist_title:
+        query += ' playlist_title=? AND'
+        to_filter.append(playlist_title)
+    if playlist_id:
+        query += ' playlist_id=? AND'
+        to_filter.append(playlist_id)
+
+    if not (playlist_title or playlist_id):
         return page_not_found(404)
 
-    query = "SELECT * FROM Playlist WHERE playlist_title = \"" + playlist_title +"\";"
-    result = g.db.execute(query)
-    found = result.fetchone()
+    query = query[:-4] + ';'
 
-    if not found:
-        return page_not_found(404)
+    results = query_db(query, to_filter)
+    # results = g.db.execute(query)
 
-    return make_response(jsonify(found))
+    return make_response(jsonify(results))
+    # query_parameters = request.args
+    #
+    # playlist_title = query_parameters.get('playlist_title')
+    #
+    #
+    # if playlist_title is None:
+    #     return page_not_found(404)
+    #
+    # query = "SELECT * FROM Playlist WHERE playlist_title = \"" + playlist_title +"\";"
+    # result = g.db.execute(query)
+    # found = result.fetchone()
+    #
+    # if not found:
+    #     return page_not_found(404)
+    #
+    # return make_response(jsonify(found))
 
 ### Delete a playlist
 @app.route('/api/v1/resources/musicService/playlists', methods=['DELETE'])
@@ -178,7 +208,7 @@ def delete_playlist():
         g.db.execute(delete_from_TrackList)
 
 
-    
+
     query = "SELECT playlist_title FROM Playlist WHERE playlist_title = \"" + playlist_title + "\";"
     result = g.db.execute(query)
     found = result.fetchone()
