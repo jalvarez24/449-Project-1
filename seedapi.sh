@@ -4,51 +4,58 @@
 
 
 #
-## Start of the POST request scripts to populate the database with tracks, using the tracks microservice
+## Start of the POST request scripts to populate the database with tracks,
+## using the tracks microservice
 #
 
 track_titles=(
   "Glow Like Dat"
-  "Let Go Feat. Grabbitz" 
-  "Big Pimpin" 
-  "Slow dancing in the dark" "Led Spirals"
+  "Let Go Feat. Grabbitz"
+  "Big Pimpin"
+  "Slow dancing in the dark"
+  "Led Spirals"
   "Under Pressure"
   "Stan"
   "Sunflower"
   )
+
 album_titles=(
   "Amen"
-  "W:/2016ALBUM/" "Vol. 3... Life and Times of S. Carter" 
-  "Ballads 1" 
+  "W:/2016ALBUM/"
+  "Vol. 3... Life and Times of S. Carter"
+  "Ballads 1"
   "John Wick: Original Motion Picture Soundtrack"
   "Hot Space"
   "The Marshall Mathers LP"
   "Spiderman:Spiderverse"
   )
+
 artists=(
   "Rich Brian"
-  "deadmau5" 
-  "Jay-Z" 
-  "Joji" 
+  "deadmau5"
+  "Jay-Z"
+  "Joji"
   "Le Castle Vania"
   "Queen"
   "Eminem"
   "Post Malone"
   )
+
 length_seconds=("230" "120" "140" "120" "130" "191" "180" "187")
 media_urls=(
-  "https://www.youtube.com/watch?v=adDD43CvrUc"
-  "https://www.youtube.com/watch?v=PKFcaXd5G8c&list=RDMMPKFcaXd5G8c&start_radio=1" 
-  "https://www.youtube.com/watch?v=9pX1Gn3rCPw" "https://www.youtube.com/watch?v=K3Qzzggn--s" 
-  "https://www.youtube.com/watch?v=7Pv0u7uMn-g"
-  "www.soundcloud.com/songExample1"
-  "www.soundcloud.com/songExample2"
-  "www.soundcloud.com/songExample3"
+  "http://localhost:8000/media/GlowLikeDat_RichBrian.mp3"
+  "http://localhost:8000/media/LetGoFeat.Grabbitz_deadmau5.mp3"
+  "http://localhost:8000/media/BigPimpin_JayZ.mp3"
+  "http://localhost:8000/media/SLOWDANCINGINTHEDARK_Joji.mp3"
+  "http://localhost:8000/media/LedSpirals_LeCastleVania.mp3"
+  "http://localhost:8000/media/UnderPressure_Queen.mp3"
+  "http://localhost:8000/media/Stan_Eminem.mp3"
+  "http://localhost:8000/media/Sunflower_PostMalone.mp3"
   )
+
 len=${#track_titles[@]}
 
-
- for (( i = 0; i<$len; i++ )); do 
+ for (( i = 0; i<$len; i++ )); do
    curl -X POST \
    -H "Content-Type: application/json" \
    --data '{"track_title":"'"${track_titles[i]}"'","album_title":"'"${album_titles[i]}"'","artist":"'"${artists[i]}"'","length_seconds":"'"${length_seconds[i]}"'","url_media":"'"${media_urls[i]}"'"}' \
@@ -57,7 +64,8 @@ len=${#track_titles[@]}
 
 
 #
-## Start of the POST request scripts to populate the database with users, using the user microservice
+## Start of the POST request scripts to populate the database with users, using
+## the user microservice
 #
 
 
