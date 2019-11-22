@@ -78,11 +78,15 @@ def create_spiff():
     playlist = requests.get("http://127.0.0.1:8000/playlists?playlist_id=" + playlist_id)
 
     # Set the xspf playlist params with data from requests
-    x.identifier = playlist["playlist_id"]
-    x.title = playlist["playlist_title"]
-    x.annotation = playlist["description"]
-    x.creator = playlist["username_id"]
-
+    x.identifier = playlist.playlist_id
+    x.title = playlist.playlist_title
+    x.annotation = playlist.description
+    x.creator = playlist.username_id
+    # x.identifier = playlist["playlist_id"]
+    # x.title = playlist["playlist_title"]
+    # x.annotation = playlist["description"]
+    # x.creator = playlist["username_id"]
+    #
     # ADD TRACKS TO THE PLAYLIST
     # Look for track_ids that has the same playlist_id from the query
     query = "SELECT track_id FROM Tracks_List WHERE"
@@ -103,30 +107,37 @@ def create_spiff():
 
     # Put all of these tracks in the xspf playlist
     for tracks in query_db(query, to_filter):
-        # query the tracks service for the info of the track
+        # query the tracks service for the info of the track which returns a json
         track_fetched = requests.get("http://127.0.0.1:8000/tracks?track_id=" + tracks["track_id"])
 
         # Create a new track object
         track = xspf.Track()
-        track.identifier = track_fetched["track_id"]
-        track.title = track_fetched["track_title"]
-        track.album = track_fetched["album_title"]
-        track.creator = track_fetched["artist"]
-        track.duration = track_fetched["length_seconds"]
-        track.link = track_fetched["url_media"]
-        track.image = track_fetched["url_art"]
+        track.identifier = track_fetched.track_id
+        track.title = track_fetched.track_title
+        track.album = track_fetched.album_title
+        track.creator = track_fetched.artist
+        track.duration = track_fetched.length_seconds
+        track.link = track_fetched.url_media
+        track.image = track_fetched.url_art
+        # track.identifier = track_fetched["track_id"]
+        # track.title = track_fetched["track_title"]
+        # track.album = track_fetched["album_title"]
+        # track.creator = track_fetched["artist"]
+        # track.duration = track_fetched["length_seconds"]
+        # track.link = track_fetched["url_media"]
+        # track.image = track_fetched["url_art"]
         x.add_track(track)
 
-
-    print x.toXml()
-
-
+    #return make_response(jsonify(playlist))
+    return make_response(x.toXml())
 
 
 
 
 
-    
+
+
+
     # results now has all of the track_ids(songs) in this playlist
     #results = query_db(query, to_filter)
 
@@ -145,7 +156,7 @@ def create_spiff():
 
 
     # Query Tracks_List table for the track_ids with that corresponding playlist_id
-    playlist = requests.get("http://127.0.0.1:8000/playlists?playlist_id=" + playlist_id)
+    #playlist = requests.get("http://127.0.0.1:8000/playlists?playlist_id=" + playlist_id)
 
 
 
