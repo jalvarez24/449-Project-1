@@ -106,22 +106,57 @@ def api_filter():
     query_parameters = request.args
 
     track_title = query_parameters.get('track_title')
+    track_id = query_parameters.get('track_id')
+    found1 = None
+    found2 = None
+    found3 = None
 
 
-    if track_title is None:
+    if track_title is None and track_id is None:
         return page_not_found(404)
 
-    query = "SELECT * FROM Track WHERE track_title = \"" +track_title + "\";"
+    elif track_title is not None:
+
+        query = """SELECT * FROM Track WHERE track_title = ?;"""
+        shard1_result = g._trackshard1.execute(query, (track_title,))
+        found1 = shard1_result.fetchone()
+
+        shard2_result = g._trackshard2.execute(query, (track_title,))
+        found2 = shard2_result.fetchone()
+
+        shard3_result = g._trackshard3.execute(query, (track_title,))
+        found3 = shard3_result.fetchone()
+    
+    elif track_id is not None:
+        
+        #convert the track_id from string to UUID object
+        track_id = uuid.UUID(track_id)
+        query = """SELECT * FROM Track WHERE track_id = ?;"""
+
+        # convert the track_id object to an int so we can perform modulus for shard key
+        shard_key = track_id.int % 3
+
+        if shard_key == 0:
+            shard1_result = g._trackshard1.execute(query, (track_id.bytes_le,))
+            found1 = shard1_result.fetchone()
+
+        elif shard_key == 1:
+            shard2_result = g._trackshard2.execute(query, (track_id.bytes_le,))
+            found2 = shard2_result.fetchone()
+
+        elif shard_key == 2:
+            shard3_result = g._trackshard3.execute(query, (track_id.bytes_le,))
+            found3 = shard3_result.fetchone()
 
     # we will need to check all 3 database shards
-    shard1_result = g._trackshard1.execute(query)
-    found1 = shard1_result.fetchone()
+    # shard1_result = g._trackshard1.execute(query, track_title)
+    # found1 = shard1_result.fetchone()
 
-    shard2_result = g._trackshard2.execute(query)
-    found2 = shard2_result.fetchone()
+    # shard2_result = g._trackshard2.execute(query, track_title)
+    # found2 = shard2_result.fetchone()
 
-    shard3_result = g._trackshard3.execute(query)
-    found3 = shard3_result.fetchone()
+    # shard3_result = g._trackshard3.execute(query, track_title)
+    # found3 = shard3_result.fetchone()
 
     if not found1 and not found2 and not found3:
         return page_not_found(404)
