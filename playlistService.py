@@ -6,11 +6,13 @@ import flask
 import json
 from flask import request, jsonify, g, make_response, render_template
 import sqlite3
+import uuid
 
 
 app = flask.Flask(__name__)
 app.config.from_envvar('APP_CONFIG')
 
+sqlite3.register_converter('GUID', lambda b: uuid.UUID(bytes_le=b))
 
 #called right before any request to establish db connection
 #connection saved globally in 'g'
@@ -136,6 +138,40 @@ def create_playlist():
     response.headers['Location'] = location
     return response
 
+
+### Update a playlist with new Track
+@app.route('/api/v1/resources/musicService/playlists', methods=['PUT'])
+def update_playlist():
+    query_parameters = request.args
+
+    playlist_id = query_parameters.get('playlist_id')
+
+    if not playlist_id:
+        return page_not_found(404)
+
+    input = request.get_json()
+
+    if not 'track_id' in input.keys():
+        return constraint_violation(409)
+
+    track_id = input['track_id']
+
+    track_id = uuid.UUID(track_id)
+
+    try:
+        with open('debugging.txt', 'a') as f:
+            f.write('attempting to insert trackid = ')
+            f.write(str(track_id) + '\n')
+            f.write('with associated playlist_id = ' + playlist_id + '\n')
+        g.db.execute("INSERT INTO Tracks_List(playlist_id, track_id) VALUES(?, ?)", (playlist_id, track_id.bytes_le,))
+    except:
+        with open('debugging.txt', 'a') as f:
+            f.write('failed trying to insert into Tracks_List\n')
+        return constraint_violation(409)
+
+    response = make_response(jsonify('Added new track to Playlist # ' + playlist_id))
+    response.headers['Location'] = 'http://127.0.0.1:5301/api/v2/resources/musicService/spiff?playlist_id=' + playlist_id
+    return response
 
 ### Retrieve a playlist
 @app.route('/api/v1/resources/musicService/playlists', methods=['GET'])

@@ -18,9 +18,9 @@ CREATE TABLE Playlist (
 
 CREATE TABLE Tracks_List (
     playlist_id INTEGER,
-    track_id GUID,
-    FOREIGN KEY (playlist_id) REFERENCES Playlist(playlist_id),
-    FOREIGN KEY (track_id) REFERENCES Track(track_id)
+    track_id GUID
+   -- FOREIGN KEY (playlist_id) REFERENCES Playlist(playlist_id),
+   -- FOREIGN KEY (track_id) REFERENCES Track(track_id)
 );
 
 CREATE TABLE User (

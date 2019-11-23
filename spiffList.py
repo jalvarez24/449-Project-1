@@ -125,11 +125,22 @@ def create_spiff():
     # results now has all of the track_ids(songs) in this playlist
     #results = query_db(query, to_filter)
 
+    response = query_db(query, to_filter)
+    with open('debugging.txt', 'a') as f:
+        f.write('\nresponse:\n')
+        f.write(str(response))
+
     # Put all of these tracks in the xspf playlist
     for tracks in query_db(query, to_filter):
         # query the tracks service for the info of the track which returns a json
-        track_fetched = requests.get("http://127.0.0.1:8000/tracks?track_id=" + tracks["track_id"])
+        track_fetched = requests.get("http://127.0.0.1:8000/tracks?track_id=" + str(tracks["track_id"]))
 
+        with open('debugging.txt', 'a') as f:
+            f.write('tracks:\n')
+            f.write(str(tracks))
+            f.write('\ntracks_fetched:\n')
+            f.write(tracks_fetched)
+            f.write('\n')
         # Create a new track object
         track = xspf.Track()
         track.identifier = "Should hold GUID"
