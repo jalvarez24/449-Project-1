@@ -46,7 +46,7 @@ CREATE TABLE Description (
 
 --Inserting sample users
 INSERT INTO User(username, password, display_name, email, homepage_url)
-  VALUES('jayro123', 
+  VALUES('jayro123',
   'pbkdf2:sha256:150000$pvhm08BM$9b18eb411ee17a6ac6a4cc24470f0d4b44f462202a01afef7b62b8217c26419e',
   'jayroAY', 'jayro@gmail.com', 'https://jayro123.com');
 INSERT INTO User(username, password, display_name, email, homepage_url)
@@ -60,6 +60,11 @@ INSERT INTO User(username, password, display_name, email, homepage_url)
 INSERT INTO Playlist(playlist_title, description, username_id) VALUES('Chill Playlist', 'For times to chill.', 'jayro123');
 INSERT INTO Playlist(playlist_title, description, username_id) VALUES('Dance Playlist', NULL, 'ian123');
 INSERT INTO Playlist(playlist_title, description, username_id) VALUES('Fire Playlist', 'It is going down tonight!', 'brendan123');
+
+--Inserting sample tracks in tracks_list
+-- INSERT INTO Tracks_List(playlist_id, track_id) VALUES(2, 1);
+-- INSERT INTO Tracks_List(playlist_id, track_id) VALUES(2, 2);
+-- INSERT INTO Tracks_List(playlist_id, track_id) VALUES(2, 3);
 
 
 --Inserting sample descriptions (Can insert now that there are users AND tracks to link to)

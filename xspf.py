@@ -32,7 +32,7 @@ if hasattr(ET, 'register_namespace'):
 # in-place prettyprint formatter
 # From http://effbot.org/zone/element-lib.htm
 def indent(elem, level=0):
-    i = "\n" + level*"  "
+    i = "\n" + level*"  " # removed "\n"
     if len(elem):
         if not elem.text or not elem.text.strip():
             elem.text = i + "  "
@@ -211,7 +211,7 @@ class Xspf(XspfBase):
         for t in tracks:
             self.add_track(t)
 
-    def toXml(self, encoding="utf-8", pretty_print=True):
+    def toXml(self, encoding="utf-8", pretty_print=False):
         root = ET.Element("{{{0}}}playlist".format(self.NS))
         root.set("version", self.version)
 
