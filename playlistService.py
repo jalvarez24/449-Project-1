@@ -142,20 +142,31 @@ def create_playlist():
 ### Update a playlist with new Track
 @app.route('/api/v1/resources/musicService/playlists', methods=['PUT'])
 def update_playlist():
+
+    # Get all of the query parameters
     query_parameters = request.args
 
+    # the only parameter we are expecting is the playlist_id
     playlist_id = query_parameters.get('playlist_id')
 
+    # return here if the playlist_id is not present, since we can't add
+    # an entry to the Tracks_List table without knowing which playlist
+    # to associate the track with.
     if not playlist_id:
         return page_not_found(404)
 
+    # The request hitting this route should have passed in a
+    # 'track_id' key with an associated value
     input = request.get_json()
 
+    # fail if it wasn't passed in
     if not 'track_id' in input.keys():
         return constraint_violation(409)
 
+    # get the track_id as a string
     track_id = input['track_id']
 
+    # convert the uuid string to a uuid object
     track_id = uuid.UUID(track_id)
 
     try:
@@ -163,6 +174,8 @@ def update_playlist():
             f.write('attempting to insert trackid = ')
             f.write(str(track_id) + '\n')
             f.write('with associated playlist_id = ' + playlist_id + '\n')
+
+        # in order to insert the uuid object into the sqlite table, we first convert it to bytes using .bytes_le
         g.db.execute("INSERT INTO Tracks_List(playlist_id, track_id) VALUES(?, ?)", (playlist_id, track_id.bytes_le,))
     except:
         with open('debugging.txt', 'a') as f:
