@@ -8,6 +8,7 @@ from flask import request, jsonify, g, make_response, render_template, Response
 import sqlite3
 import requests
 import json
+import uuid
 
 # Create XSPF Playlist
 # this will hold the xspf playlist
@@ -17,6 +18,7 @@ x = xspf.Xspf()
 app = flask.Flask(__name__)
 app.config.from_envvar('APP_CONFIG')
 
+sqlite3.register_converter('GUID', lambda b: uuid.UUID(bytes_le=b))
 
 #called right before any request to establish db connection
 #connection saved globally in 'g'
@@ -32,7 +34,7 @@ def make_dicts(cursor, row):
 def get_db():
     db = getattr(g, '_database', None)
     if db is None:
-        db = g._database = sqlite3.connect(app.config['DATABASE'])
+        db = g._database = sqlite3.connect(app.config['DATABASE'], detect_types=sqlite3.PARSE_DECLTYPES)
         db.execute('PRAGMA foreign_keys = ON')
         db.row_factory = sqlite3.Row
         #db.row_factory = make_dicts
@@ -133,13 +135,18 @@ def create_spiff():
     # Put all of these tracks in the xspf playlist
     for tracks in query_db(query, to_filter):
         # query the tracks service for the info of the track which returns a json
-        track_fetched = requests.get("http://127.0.0.1:8000/tracks?track_id=" + str(tracks["track_id"]))
+        trackidizzle = tracks['track_id']
+        # trackidizzle = uuid.UUID(tracks['track_id'])
+        with open('debugging.txt', 'a') as f:
+            f.write('\ntrackidizzle:\n')
+            f.write(str(trackidizzle))
+        track_fetched = requests.get("http://127.0.0.1:8000/tracks?track_id=" + str(trackidizzle))
 
         with open('debugging.txt', 'a') as f:
             f.write('tracks:\n')
             f.write(str(tracks))
             f.write('\ntracks_fetched:\n')
-            f.write(tracks_fetched)
+            f.write(str(track_fetched))
             f.write('\n')
         # Create a new track object
         track = xspf.Track()
@@ -147,7 +154,7 @@ def create_spiff():
         track.title = "Test Title"
         track.album = "Test Album Title"
         track.creator = "Test Artist"
-        track.duration = 222
+        track.duration = "222"
         track.location = "LINK FOR MINIO HERE"
         track.image = "Test Image Here"
         # track.identifier = track_fetched.track_id
