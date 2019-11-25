@@ -95,7 +95,7 @@ def create_spiff():
     x.title = playlist.json()[0]['playlist_title']
     x.annotation = playlist.json()[0]['description']
     x.creator = playlist.json()[0]['username_id']
-    #x.identifier = playlist.json()[0]['playlist_id']
+    x.identifier = playlist.json()[0]['playlist_id']
     # x.title = fetched_playlist_data.playlist_title
     # x.annotation = fetched_playlist_data.description
     # x.creator = fetched_playlist_data.username_id
@@ -111,9 +111,8 @@ def create_spiff():
     #
     # ADD TRACKS TO THE PLAYLIST
     # Look for track_ids that has the same playlist_id from the query
-    query = "SELECT track_id FROM Tracks_List WHERE"
-    to_filter = []
 
+<<<<<<< HEAD
     if playlist_id:
         query += ' playlist_id=? AND'
         to_filter.append(playlist_id)
@@ -164,26 +163,32 @@ def create_spiff():
         # track.duration = track_fetched.length_seconds
         # track.link = track_fetched.url_media
         # track.image = track_fetched.url_art
+=======
+    query = "SELECT track_id FROM Tracks_List WHERE playlist_id=" + playlist_id
+    result = g.db.execute(query)
+    found = result.fetchall()
+
+    for track in found:
+        track_fetched = requests.get("http://localhost:8000/tracks?track_id=" + track[0])
+        track.identifier = track_fetched.track_id
+        track.title = track_fetched.track_title
+        track.album = track_fetched.album_title
+        track.creator = track_fetched.artist
+        track.duration = track_fetched.length_seconds
+        track.location = track_fetched.url_media
+        track.image = track_fetched.url_art
+>>>>>>> b330ed3d5153a546b521861ecb33c2ed9cbb2245
         # track.identifier = track_fetched["track_id"]
         # track.title = track_fetched["track_title"]
         # track.album = track_fetched["album_title"]
         # track.creator = track_fetched["artist"]
         # track.duration = track_fetched["length_seconds"]
-        # track.link = track_fetched["url_media"]
+        # track.location = track_fetched["url_media"]
         # track.image = track_fetched["url_art"]
-
         x.add_track(track)
 
-    # Testing adding tracks to playlist
-    track = xspf.Track()
-    track.identifier = "Should hold GUID"
-    track.title = "Test Title"
-    track.album = "Test Album Title"
-    track.creator = "Test Artist"
-    track.duration = "222"
-    track.link = "http://localhost:8000/media/BigPimpin_JayZ.mp3" #"LINK FOR MINIO HERE"
-    track.image = "Test Image Here"
-    x.add_track(track)
+
+
 
     #return make_response(jsonify(playlist.json()))
     #return make_response(playlist.tostring())
