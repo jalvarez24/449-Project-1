@@ -95,7 +95,7 @@ def create_spiff():
     x.title = playlist.json()[0]['playlist_title']
     x.annotation = playlist.json()[0]['description']
     x.creator = playlist.json()[0]['username_id']
-    x.identifier = playlist.json()[0]['playlist_id']
+    x.identifier = str(playlist.json()[0]['playlist_id'])
     # x.title = fetched_playlist_data.playlist_title
     # x.annotation = fetched_playlist_data.description
     # x.creator = fetched_playlist_data.username_id
@@ -111,8 +111,9 @@ def create_spiff():
     #
     # ADD TRACKS TO THE PLAYLIST
     # Look for track_ids that has the same playlist_id from the query
+    query = "SELECT track_id FROM Tracks_List WHERE"
+    to_filter = []
 
-<<<<<<< HEAD
     if playlist_id:
         query += ' playlist_id=? AND'
         to_filter.append(playlist_id)
@@ -139,7 +140,7 @@ def create_spiff():
         with open('debugging.txt', 'a') as f:
             f.write('\ntrackidizzle:\n')
             f.write(str(trackidizzle))
-        track_fetched = requests.get("http://127.0.0.1:8000/tracks?track_id=" + str(trackidizzle))
+        track_fetched = requests.get("http://localhost:8000/tracks?track_id=" + str(trackidizzle)).json()
 
         with open('debugging.txt', 'a') as f:
             f.write('tracks:\n')
@@ -149,13 +150,16 @@ def create_spiff():
             f.write('\n')
         # Create a new track object
         track = xspf.Track()
-        track.identifier = "Should hold GUID"
-        track.title = "Test Title"
-        track.album = "Test Album Title"
-        track.creator = "Test Artist"
-        track.duration = "222"
-        track.location = "LINK FOR MINIO HERE"
-        track.image = "Test Image Here"
+        track.identifier = str(trackidizzle)
+        track.title = str(track_fetched['track_title'])
+        track.album = str(track_fetched['album_title'])
+        track.creator = str(track_fetched['artist'])
+        track.duration = str(track_fetched['length_seconds'])
+        track.location = str(track_fetched['url_media'])
+        track.image = str(track_fetched['url_art'])
+        x.add_track(track)
+
+
         # track.identifier = track_fetched.track_id
         # track.title = track_fetched.track_title
         # track.album = track_fetched.album_title
@@ -163,21 +167,19 @@ def create_spiff():
         # track.duration = track_fetched.length_seconds
         # track.link = track_fetched.url_media
         # track.image = track_fetched.url_art
-=======
-    query = "SELECT track_id FROM Tracks_List WHERE playlist_id=" + playlist_id
-    result = g.db.execute(query)
-    found = result.fetchall()
-
-    for track in found:
-        track_fetched = requests.get("http://localhost:8000/tracks?track_id=" + track[0])
-        track.identifier = track_fetched.track_id
-        track.title = track_fetched.track_title
-        track.album = track_fetched.album_title
-        track.creator = track_fetched.artist
-        track.duration = track_fetched.length_seconds
-        track.location = track_fetched.url_media
-        track.image = track_fetched.url_art
->>>>>>> b330ed3d5153a546b521861ecb33c2ed9cbb2245
+    # query = "SELECT track_id FROM Tracks_List WHERE playlist_id=" + playlist_id
+    # result = g.db.execute(query)
+    # found = result.fetchall()
+    #
+    # for track in found:
+    #     track_fetched = requests.get("http://localhost:8000/tracks?track_id=" + track[0])
+    #     track.identifier = track_fetched.track_id
+    #     track.title = track_fetched.track_title
+    #     track.album = track_fetched.album_title
+    #     track.creator = track_fetched.artist
+    #     track.duration = track_fetched.length_seconds
+    #     track.location = track_fetched.url_media
+    #     track.image = track_fetched.url_art
         # track.identifier = track_fetched["track_id"]
         # track.title = track_fetched["track_title"]
         # track.album = track_fetched["album_title"]
@@ -185,7 +187,6 @@ def create_spiff():
         # track.duration = track_fetched["length_seconds"]
         # track.location = track_fetched["url_media"]
         # track.image = track_fetched["url_art"]
-        x.add_track(track)
 
 
 
