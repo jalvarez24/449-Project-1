@@ -31,6 +31,6 @@
 ==================================================================================
 ### 449 Project 1: Music Microservices
 #### Group/Roles:
-1. Dev1: Jayro Alvarez
-2. Dev2: Ian Alvarez
+1. Dev1: Ian Alvarez
+2. Dev2: JayroAlvarez
 3. Ops:  Brendan Albert
