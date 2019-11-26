@@ -4,7 +4,8 @@
 
 import xspf
 import flask
-from flask import request, jsonify, g, make_response, render_template, Response
+from flask import request, jsonify, g, make_response, render_template, Response, send_file
+import os
 import sqlite3
 import requests
 import json
@@ -71,7 +72,7 @@ def home():
     return render_template('user_guide.html')
 
 
-@app.route('/api/v2/resources/musicService/spiff', methods=['GET'])
+@app.route('/api/v2/resources/musicService/spiff.xspf', methods=['GET'])
 def create_spiff():
     query_parameters = request.args
     playlist_id = query_parameters.get('playlist_id')
@@ -188,6 +189,9 @@ def create_spiff():
         # track.location = track_fetched["url_media"]
         # track.image = track_fetched["url_art"]
 
+    # This is if you want to do both
+    # with open('myPlaylist.xspf', 'a') as f:
+    #     f.write(str(x.toXml()))
 
 
 
@@ -195,13 +199,13 @@ def create_spiff():
     #return make_response(playlist.tostring())
     #return make_response(jsonify(playlist))
     #return make_response(x.toXml(pretty_print=true))
+
+
+    # This is when you just want to display the xml spiff file on the browser
     #return make_response(jsonify(x.toXml()))
+
+    # This is when you want an xspf(html) file downloaded
     return Response(x.toXml(), mimetype='application/xspf+xml')
-
-
-
-
-
 
 
 
