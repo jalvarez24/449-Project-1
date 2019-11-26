@@ -1,8 +1,9 @@
-# 449 Project 1: Music Microservices
-## Group/Roles:
-1. Dev1: Jayro Alvarez
+# 449 Project 2: Music Microservices
+## Database Sharding, XSPF Playlists and Load Balancing Proxy with Kong
+### Group/Roles:
+1. Dev1: Brendan Albert
 2. Dev2: Ian Alvarez
-3. Ops:  Brendan Albert
+3. Ops:  Jayro Alvarez
 
 # To Start Using Our Microservices:
 1. Open a terminal in Project Directory
@@ -23,6 +24,13 @@
 
 4. The servers are now running! Go to http://localhost:8000 to see full user manual
 
-# Operations
 
-### Check the home route http://localhost:8000 to view the full user manual and how-to guide
+
+==================================================================================
+## Phase 1
+==================================================================================
+### 449 Project 1: Music Microservices
+#### Group/Roles:
+1. Dev1: Jayro Alvarez
+2. Dev2: Ian Alvarez
+3. Ops:  Brendan Albert
