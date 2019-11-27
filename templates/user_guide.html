@@ -14,7 +14,7 @@
             <p>Through the beauty of Makefiles, we can initialize and spin up all four microservices with one command!</p>
             <div style="text-align: left; width: 25%; margin: 0 auto;">
                 <p>In the terminal, run: <span style="background: #ddd; padding: 5px; font-size: 16px; font-family: monospace;">make init</span></p>
-                <p>This will run two commands for you.  It runs 
+                <p>This will run two commands for you.  It runs
             </div>
                 <ol style="text-align: left; width: 25%; margin: 0 auto;">
                     <li><strong>flask init</strong> to initialize the database</li>
@@ -33,6 +33,7 @@
                 <button style="font-size: 12px; border-radius: 5px; padding: 10px; font-family: monospace;" id="track">Tracks Guide</button>
                 <button style="font-size: 12px; border-radius: 5px; padding: 10px; font-family: monospace;" id="user">Users Guide</button>
                 <button style="font-size: 12px; border-radius: 5px; padding: 10px; font-family: monospace;" id="descrip">Descriptions Guide</button>
+                <button style="font-size: 12px; border-radius: 5px; padding: 10px; font-family: monospace;" id="xspf">XSPF Playlist Guide</button>
                 <button style="font-size: 12px; border-radius: 5px; padding: 10px; font-family: monospace;" id="playlist">Playlists Guide</button>
             </div>
         </header>
@@ -60,13 +61,13 @@
                         </br> <b>Example of a POST curl command: <p></b>curl -v -d '{"track_title" : "MYSONG", "album_title": "MYALBUM", "artist" : "BestArtist", "length_seconds" : "201", "url_media" : "wwww.soundcloud.com/thisSong", "url_art" : "wwww.flickr.com/thisImage"}' -H "Content-Type: application/json" -X POST http://127.0.0.1:5001/api/v1/resources/musicService/tracks </p> </br>
 
                     <li><b>Retrieve</b> a track, go to URL: </br><i>http://127.0.0.1:5001/api/v1/resources/musicService/tracks?track_title=<b>track_title</b></i>
-                        
+
                         </br></br>Replace <b>track_title</b> at end of URL with title of track you'd like to retrieve.</li>
                         <ul>
                             <li>If track_title is not known retrieve <b>all</b> tracks by going to URL:</li>
                             http://127.0.0.1:5001/api/v1/resources/musicService/tracks/all
                         </ul></br></br>
-                        
+
                     <li><b>Edit</b> a track, send a PUT request in JSON format to: </br><i>http://127.0.0.1:5001/api/v1/resources/musicService/tracks/edit-track</li>
                     </br>JSON must have these fields:
                         <ul>
@@ -80,7 +81,7 @@
                             <li>newUrlArt</li>
                         </ul>
                     </br> <b>Example of a PUT curl command: <p></b>curl -v -d '{"track_title" : "Stan", "artist": "Eminem" , "newTrackTitle" : "NEWSONG", "newAlbumTitle": "NEWESTALBUM", "newArtist" : "NEWBestArtist", "newLength" : "180", "newUrlMedia" : "wwww.soundcloud.com/thisSong", "newUrlArt" : "wwww.flickr.com/thisImage"}' -H "Content-Type: application/json" -X PUT http://127.0.0.1:5001/api/v1/resources/musicService/tracks/edit-track </p> </br>
-                    
+
                     <li><b>Delete</b> a track, send a DELETE request in JSON format to: </br> http://127.0.0.1:5001/api/v1/resources/musicService/tracks</li>
                     </br>JSON must have these fields:
                         <ul>
@@ -101,7 +102,7 @@
                             <li>display_name</li>
                             <li>email</li>
                             <li>homepage_url <i>(Optional)</i></li>
-                        </ul> 
+                        </ul>
                     </li>
                     </br>
                     <li>
@@ -112,7 +113,7 @@
                     <li>
                         To <b>Delete a User</b>, send a DELETE request in JSON format to: <i>http://127.0.0.1:5000/api/v1/resources/musicService/users</i>
                         </br>
-                        <b>Post requires a username field.</b> 
+                        <b>Post requires a username field.</b>
                     </li>
                     </br>
                     <li>
@@ -121,7 +122,7 @@
                         <ul>
                             <li>username</li>
                             <li>newpassword</li>
-                        </ul> 
+                        </ul>
                     </li>
                     </br>
                     <li>
@@ -130,11 +131,11 @@
                         <ul>
                             <li>username</li>
                             <li>newpassword</li>
-                        </ul> 
+                        </ul>
                     </li>
                 </ul>
             </div>
-            
+
             <div id="descripDiv" style="display:none">
                 Description Microservices:
                 <ul style="text-align: left;">
@@ -145,15 +146,59 @@
                             <li>username</li>
                             <li>track_id</li>
                             <li>description_text</li>
-                        </ul> 
+                        </ul>
                     </li>
                     </br>
                     <li>
-                        To <b>Retrieve a User's Description of a Track</b>, go to URL: 
+                        To <b>Retrieve a User's Description of a Track</b>, go to URL:
                         <br>
                         <i>http://127.0.0.1:5002/api/v1/resources/musicService/descriptions?username=<b>username</b>&track_id=<b>track_id</b></i>
                         </br>Replace <b>username</b> at end of URL with username of user's description you'd like to retrieve and replace <b>track_id</b> of track_id of the specific track.
                     </li>
+                </ul>
+            </div>
+
+
+            <div id="spiffDiv" style="display:none">
+                XSPF Microservices:
+                <ul style="text-align: left;">
+                  <b>This is assuming that you know the playlist_id you want to convert.</b></br></br>
+                    <li>
+                        Steps to <b>convert a playlist into an XSPF playlist:</b>
+                        <br></br>
+                        <ul>
+                            <li>Do a <b>GET</b> request to the <b>Tracks Microservice</b>, enter this url in your browser:</li>
+                            <ul>
+                              <li>http://localhost:8000/tracks/all</li>
+                            </ul>
+                            <br></br>
+                            This will show all the tracks available. Find the <b>track_id</b> you would want to add to your playlist.
+                            <br></br>
+                            <li>Open a new terminal window</li>
+                            <br></br>
+                            <li><b>Add a track to your playlist</b> by making a <b>PUT</b> request use this curl command:</li>
+                            <ul>
+                              <li>curl -v -d '{"track_id":"<b>track_id</b>"}' -H "Content-Type: application/json" -X PUT http://127.0.0.1:5300/api/v1/resources/musicService/playlists?playlist_id=<b>playlist_id</b></li>
+                              <br></br>
+                              <li>curl -v -d '{"track_id":"e8474675-ec3d-4931-9f8e-6b5006f09c6a"}' -H "Content-Type: application/json" -X PUT http://127.0.0.1:5300/api/v1/resources/musicService/playlists?playlist_id=2</li>
+                            </ul>
+                            <br></br>
+                            <b>YOU CAN NOW CONVERT THIS PLAYLIST INTO AN XSPF PLAYLIST</b>
+                            <b>Note:</b> You can't have a playlist without a track, it would not work. Make sure to add tracks to the playlist first!
+                            <br></br>
+                            <li>Make a <b>Get</b> request in your browser by entering this url:</li>
+                            <ul>
+                            </br>
+                              <li>http://127.0.0.1:5400/api/v2/resources/musicService/spiff.xspf?playlist_id=<b>playlist_id</b></li>
+                            </br>
+                              <li>For example:</li>
+                              <ul>
+                                <li>http://127.0.0.1:5400/api/v2/resources/musicService/spiff.xspf?playlist_id=2</li>
+                              </ul>
+                            </ul>
+                        </ul>
+                    </li>
+
                 </ul>
             </div>
 
@@ -170,15 +215,15 @@
                         </ul>
                     </br> <b>Example of a POST curl command: <p></b>curl -v -d '{"playlist_title" : "The Feels Train", "description" : "Curl up and cry.", "username_id" : "ian123"}' -H "Content-Type: application/json" -X POST http://127.0.0.1:5003/api/v1/resources/musicService/playlists</p> </br>
 
-            
+
                     <li><b>Retrieve</b> a playlist, go to URL: </br><i>http://127.0.0.1:5003/api/v1/resources/musicService/playlists?playlist_title=<b>playlist_title</b></i>
-                        
+
                         </br></br>Replace <b>playlist_title</b> at end of URL with title of playlist you'd like to retrieve.</li>
                         <ul>
                             <li>If playlist_title is not known retrieve <b>all</b> playlists by going to URL:</li>
                             http://127.0.0.1:5003/api/v1/resources/musicService/playlists/all
                         </ul></br></br>
-                    
+
                      <li><b>Delete</b> a playlist, send a DELETE request in JSON format to: </br> http://127.0.0.1:5003/api/v1/resources/musicService/playlists</li>
                     </br>JSON must have these fields:
                         <ul>
@@ -200,6 +245,7 @@
             let tBut = document.getElementById("track");
             let uBut = document.getElementById("user");
             let dBut = document.getElementById("descrip");
+            let spiffBut = document.getElementById("xspf");
             let pBut = document.getElementById("playlist");
 
             let onDiv = document.getElementById("scriptsDiv");
@@ -207,6 +253,7 @@
             let tDiv = document.getElementById("trackDiv");
             let uDiv = document.getElementById("userDiv");
             let dDiv = document.getElementById("descripDiv");
+            let spiffDiv = document.getElementById("spiffDiv");
             let pDiv = document.getElementById("playlistDiv");
 
             sBut.onclick = () => { changeView(sBut, sDiv); }
@@ -216,6 +263,8 @@
             uBut.onclick = () => { changeView(uBut, uDiv); }
 
             dBut.onclick = () => { changeView(dBut, dDiv); }
+
+            spiffBut.onclick = () => { changeView(spiffBut, spiffDiv); }
 
             pBut.onclick = () => { changeView(pBut, pDiv); }
 
