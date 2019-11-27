@@ -10,9 +10,9 @@
 	- Run command: `make init`. This will:
 		- Run `ulimit -n 4096 && sudo kong start` and start kong
 		- Run `./kong_configuring.sh`, a script to configure all microservices and
-			set them up with kong's services, routes, upstreams, and target.
+			set them up with kong's services, routes, upstreams, and targets.
 		- Run `flask init` and set up the database schema
-		- Run `foreman start` to spin up our four microservices
+		- Run `foreman start` to spin up our 3 instances of each of the four microservices
 
 2. Open another terminal in Project Directory
 	- Run command `make startminio`. This will:
